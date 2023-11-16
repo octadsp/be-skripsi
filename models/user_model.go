@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type User struct {
 	ID       uint32 `json:"id" gorm:"primary_key:auto_increment"`
 	FullName string `json:"fullname" gorm:"type: varchar(100)"`
@@ -11,6 +13,8 @@ type User struct {
 	Avatar   string `json:"image"`
 	Status   string `json:"status" gorm:"type: varchar(50)"`
 	Roles    string `json:"roles" gorm:"type: varchar(50)"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoCreateTime"`
 }
 
 // type UserResponse struct {
