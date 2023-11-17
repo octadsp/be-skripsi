@@ -8,17 +8,19 @@ import (
 
 func RunMigration() {
 	err := pg.DB.AutoMigrate(
-		&models.User{},
-		&models.Roles{},
 		&models.CarBrand{},
+		&models.CarClass{},
 		&models.CarType{},
-		&models.FamilyRelation{},
-		&models.SimClass{},
 		&models.CompanyPartner{},
 		&models.CompanyService{},
 		&models.DemageCategory{},
 		&models.DemageSubCategory{},
+		&models.FamilyRelation{},
+		&models.PriceList{},
+		&models.Roles{},
+		&models.SimClass{},
 		&models.StatusReservation{},
+		&models.User{},
 	)
 
 	if err != nil {
