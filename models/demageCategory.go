@@ -7,8 +7,8 @@ type DemageCategory struct {
 	Kode                string    `json:"kode" gorm:"type: varchar(20)"`
 	Name                string    `json:"name" gorm:"type: varchar(100)"`
 	Status              string    `json:"status" gorm:"type: varchar(10)"`
-	DemageSubCategoryID uint32    `json:"demage_sub_category_id"`
-	PriceListID         uint32    `json:"price_list_id"`
+	// DemageSubCategoryID uint32    `json:"demage_sub_category_id"`
+	// PriceListID         uint32    `json:"price_list_id"`
 	CreatedAt           time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt           time.Time `json:"updated_at" gorm:"autoCreateTime"`
 }
