@@ -12,7 +12,6 @@ func RunMigration() {
 		&models.Roles{},
 		&models.CarBrand{},
 		&models.CarType{},
-		&models.CarYear{},
 		&models.FamilyRelation{},
 		&models.SimClass{},
 		&models.CompanyPartner{},
