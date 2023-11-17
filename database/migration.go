@@ -17,7 +17,7 @@ func RunMigration() {
 		&models.CompanyPartner{},
 		&models.CompanyService{},
 		&models.DemageCategory{},
-		&models.DemagePrice{},
+		&models.DemageSubCategory{},
 		&models.StatusReservation{},
 	)
 
