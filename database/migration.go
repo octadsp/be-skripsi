@@ -17,9 +17,12 @@ func RunMigration() {
 		&models.DemageSubCategory{},
 		&models.FamilyRelation{},
 		&models.PriceList{},
+		&models.ReservationMaster{},
+		&models.ReservationVehicle{},
+		&models.ReservationInsurance{},
+		&models.ReservationItem{},
 		&models.Roles{},
 		&models.SimClass{},
-		&models.StatusReservation{},
 		&models.User{},
 	)
 
