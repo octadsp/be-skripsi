@@ -56,6 +56,8 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	}
 
 	data, err := h.AuthRepository.Register(user)
+	data.CreatedAt = time.Now()
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}

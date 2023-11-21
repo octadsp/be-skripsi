@@ -1,6 +1,8 @@
 package repositories
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 // repository struct, which implements the interface containing the methods.
 type repository struct {
