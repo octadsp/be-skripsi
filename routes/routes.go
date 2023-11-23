@@ -7,4 +7,6 @@ func RouteInit(e *echo.Group) {
 	AuthRoutes(e)
 	ReservationMasterRoutes(e)
 	CarBrandRoutes(e)
+	CarClassRoutes(e)
+	CarTypeRoutes(e)
 }

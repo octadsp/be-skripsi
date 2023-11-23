@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	carBranddto "be-skripsi/dto/carBrands"
+	carTypedto "be-skripsi/dto/carTypes"
 	dto "be-skripsi/dto/results"
 	"be-skripsi/models"
 	"be-skripsi/repositories"
@@ -13,37 +13,37 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type handlerCarBrand struct {
-	CarBrandRepository repositories.CarBrandRepository
+type handlerCarType struct {
+	CarTypeRepository repositories.CarTypeRepository
 }
 
-func HandlerCarBrand(CarBrandRepository repositories.CarBrandRepository) *handlerCarBrand {
-	return &handlerCarBrand{CarBrandRepository}
+func HandlerCarType(CarTypeRepository repositories.CarTypeRepository) *handlerCarType {
+	return &handlerCarType{CarTypeRepository}
 }
 
-func (h *handlerCarBrand) FindCarBrands(c echo.Context) error {
-	brands, err := h.CarBrandRepository.FindCarBrands()
+func (h *handlerCarType) FindCarTypes(c echo.Context) error {
+	types, err := h.CarTypeRepository.FindCarTypes()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: brands})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: types})
 }
 
-func (h *handlerCarBrand) GetCarBrand(c echo.Context) error {
+func (h *handlerCarType) GetCarType(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	// userLogin := c.Get("userLogin")
 	// userId := userLogin.(jwt.MapClaims)["id"].(float64)
 
-	brand, err := h.CarBrandRepository.GetCarBrand(id)
+	types, err := h.CarTypeRepository.GetCarType(id)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: brand})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: types})
 }
 
-func (h *handlerCarBrand) AddCarBrand(c echo.Context) error {
+func (h *handlerCarType) AddCarType(c echo.Context) error {
 	// userLogin := c.Get("userLogin")
 	// userId, ok := userLogin.(jwt.MapClaims)["id"].(float64)
 	// if !ok {
@@ -52,7 +52,7 @@ func (h *handlerCarBrand) AddCarBrand(c echo.Context) error {
 
 	// fmt.Println("user_id :", int(userId))
 
-	request := new(carBranddto.CarBrandReq)
+	request := new(carTypedto.CarTypeReq)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
@@ -63,50 +63,50 @@ func (h *handlerCarBrand) AddCarBrand(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	brand := models.CarBrand{
+	types := models.CarType{
 		Name:   request.Name,
 		Tipe:   request.Tipe,
 		Status: "A",
 	}
 
-	data, err := h.CarBrandRepository.AddCarBrand(brand)
+	data, err := h.CarTypeRepository.AddCarType(types)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: respAddBrand(data)})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: respAddType(data)})
 }
 
-func (h *handlerCarBrand) UpdateCarBrand(c echo.Context) error {
+func (h *handlerCarType) UpdateCarType(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	request := new(carBranddto.CarBrandReq)
+	request := new(carTypedto.CarTypeReq)
 	if err := c.Bind(request); err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	brand, err := h.CarBrandRepository.GetCarBrand(id)
+	types, err := h.CarTypeRepository.GetCarType(id)
 
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	if request.Name != "" {
-		brand.Name = request.Name
+		types.Name = request.Name
 	}
 
 	if request.Tipe != "" {
-		brand.Tipe = request.Tipe
+		types.Tipe = request.Tipe
 	}
 
 	if request.Status != "" {
-		brand.Status = request.Status
+		types.Status = request.Status
 	}
 
-	brand.UpdatedAt = time.Now()
+	types.UpdatedAt = time.Now()
 
-	data, err := h.CarBrandRepository.UpdateCarBrand(brand)
+	data, err := h.CarTypeRepository.UpdateCarType(types)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}
@@ -114,8 +114,8 @@ func (h *handlerCarBrand) UpdateCarBrand(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
-func respAddBrand(u models.CarBrand) carBranddto.CarBrandReq {
-	return carBranddto.CarBrandReq{
+func respAddType(u models.CarType) carTypedto.CarTypeReq {
+	return carTypedto.CarTypeReq{
 		Name:   u.Name,
 		Tipe:   u.Tipe,
 		Status: u.Status,
