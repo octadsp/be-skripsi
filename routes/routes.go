@@ -9,4 +9,5 @@ func RouteInit(e *echo.Group) {
 	CarBrandRoutes(e)
 	CarClassRoutes(e)
 	CarTypeRoutes(e)
+	PriceListRoutes(e)
 }
