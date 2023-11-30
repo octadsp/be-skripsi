@@ -10,4 +10,6 @@ func RouteInit(e *echo.Group) {
 	CarClassRoutes(e)
 	CarTypeRoutes(e)
 	PriceListRoutes(e)
+	DemageCategoryRoutes(e)
+	DemageSubCategoryRoutes(e)
 }
