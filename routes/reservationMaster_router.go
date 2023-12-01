@@ -9,7 +9,7 @@ import (
 )
 
 func ReservationMasterRoutes(e *echo.Group) {
-	reservationMasterRepository := repositories.RepositoryReservation(pg.DB)
+	reservationMasterRepository := repositories.RepositoryReservationMaster(pg.DB)
 	h := handlers.HandlerReservationMaster(reservationMasterRepository)
 
 	e.GET("/reservation-masters", h.FindReservMasters)

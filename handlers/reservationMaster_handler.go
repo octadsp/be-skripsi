@@ -22,12 +22,12 @@ func HandlerReservationMaster(ReservationMasterRepository repositories.Reservati
 }
 
 func (h *handlerReservationMaster) FindReservMasters(c echo.Context) error {
-	users, err := h.ReservationMasterRepository.FindReservMasters()
+	vehicles, err := h.ReservationMasterRepository.FindReservMasters()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: users})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: vehicles})
 }
 
 func (h *handlerReservationMaster) GetReservMaster(c echo.Context) error {
@@ -35,12 +35,12 @@ func (h *handlerReservationMaster) GetReservMaster(c echo.Context) error {
 	// userLogin := c.Get("userLogin")
 	// userId := userLogin.(jwt.MapClaims)["id"].(float64)
 
-	user, err := h.ReservationMasterRepository.GetReservMaster(id)
+	vehicle, err := h.ReservationMasterRepository.GetReservMaster(id)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: user})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: vehicle})
 }
 
 func (h *handlerReservationMaster) AddReservMaster(c echo.Context) error {

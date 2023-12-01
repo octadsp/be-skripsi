@@ -11,4 +11,5 @@ type ReservationInsuranceResp struct {
 	DriverJob      string `json:"driver_job"`
 	DriverAge      string `json:"driver_age"`
 	DriverLicense  string `json:"driver_license"`
+	Status         string `json:"status"`
 }

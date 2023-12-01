@@ -16,7 +16,7 @@ type ReservationMasterRepository interface {
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
-func RepositoryReservation(db *gorm.DB) *repository {
+func RepositoryReservationMaster(db *gorm.DB) *repository {
 	return &repository{db} // returns a pointer to a new repository struct initialized with the provided database connection.
 }
 
