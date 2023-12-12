@@ -1,8 +1,8 @@
 package authdto
 
 type RegisterRequest struct {
-	FullName string `json:"full_name" form:"full_name" validate:"required"`
-	LastName string `json:"last_name" form:"last_name"`
+	FullName string `json:"fullname" form:"fullname" validate:"required"`
+	LastName string `json:"lastname" form:"lastname"`
 	Email    string `json:"email" form:"email" validate:"required"`
 	Password string `json:"password" form:"password" validate:"required"`
 	Avatar   string `json:"image" form:"image"`

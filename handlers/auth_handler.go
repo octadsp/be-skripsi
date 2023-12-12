@@ -52,7 +52,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 		Avatar:   "https://res.cloudinary.com/dpxazv6a6/image/upload/v1685689207/skripsi/defaultAvatar_gsslte.png",
 		Phone:    request.Phone,
 		Status:   "A",
-		Roles:    request.Roles,
+		Roles:    "User",
 	}
 
 	data, err := h.AuthRepository.Register(user)
