@@ -23,7 +23,7 @@ func RepositoryCarClass(db *gorm.DB) *repository {
 // queries the "carclass" table in the database and scans the results into a slice of CarClass models.
 func (r *repository) FindCarClass() ([]models.CarClass, error) {
 	var class []models.CarClass
-	err := r.db.Order("id").Find(&class).Error // Using Find method
+	err := r.db.Order("id").Preload("CarBrand").Preload("CarType").Find(&class).Error // Using Find method
 
 	return class, err
 }

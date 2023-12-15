@@ -30,6 +30,7 @@ func (h *handlerCarClass) FindCarClass(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: class})
 }
 
+
 func (h *handlerCarClass) GetCarClass(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	// userLogin := c.Get("userLogin")
