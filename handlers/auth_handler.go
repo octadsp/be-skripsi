@@ -116,7 +116,9 @@ func (h *handlerAuth) Login(c echo.Context) error {
 	// Generate token jwt nya
 	claims := jwt.MapClaims{}
 	claims["id"] = user.ID
-	claims["exp"] = time.Now().Add(time.Hour * 3).Unix() // 3 Jam expired tokennya
+	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() // 3 Jam expired tokennya
+
+	expiresIn := time.Now().Add(time.Hour * 1).Unix()
 
 	token, errGenerateToken := jwtToken.GenerateToken(&claims)
 	if errGenerateToken != nil {
@@ -135,6 +137,7 @@ func (h *handlerAuth) Login(c echo.Context) error {
 		Status:   user.Status,
 		Roles:    user.Roles,
 		Token:    token,
+		ExpiresIn: expiresIn,
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: loginResponse})

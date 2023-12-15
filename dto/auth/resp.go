@@ -24,4 +24,5 @@ type LoginResponse struct {
 	Status   string `json:"status"`
 	Roles    string `json:"roles"`
 	Token    string `json:"token"`
+	ExpiresIn int64 `json:"expiresIn"`
 }
