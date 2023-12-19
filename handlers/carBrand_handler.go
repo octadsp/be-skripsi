@@ -40,6 +40,14 @@ func (h *handlerCarBrand) FindCarBrands(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: brands})
 }
 
+func (h *handlerCarBrand) FindAllBrands(c echo.Context) error {
+	brands, err := h.CarBrandRepository.FindAllBrands()
+	if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: brands})
+}
+
 func (h *handlerCarBrand) GetCarBrand(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	// userLogin := c.Get("userLogin")
