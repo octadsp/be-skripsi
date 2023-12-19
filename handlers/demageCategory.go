@@ -114,6 +114,23 @@ func (h *handlerDemageCategory) UpdateDemageCategory(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
+func (h *handlerDemageCategory) DeleteDemageCategory(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	brand, err := h.DemageCategory.GetDemageCategory(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	data, err := h.DemageCategory.DeleteDemageCategory(brand, id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
 func respAddDemageCat(u models.DemageCategory) demagecategoriesdto.DemageCategoryReq {
 	return demagecategoriesdto.DemageCategoryReq{
 		Name:   u.Name,

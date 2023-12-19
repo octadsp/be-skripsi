@@ -30,7 +30,6 @@ func (h *handlerCarClass) FindCarClass(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: class})
 }
 
-
 func (h *handlerCarClass) GetCarClass(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	// userLogin := c.Get("userLogin")
@@ -113,6 +112,23 @@ func (h *handlerCarClass) UpdateCarClass(c echo.Context) error {
 	class.UpdatedAt = time.Now()
 
 	data, err := h.CarClassRepository.UpdateCarClass(class)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
+func (h *handlerCarClass) DeleteCarClass(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	brand, err := h.CarClassRepository.GetCarClass(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	data, err := h.CarClassRepository.DeleteCarClass(brand, id)
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}

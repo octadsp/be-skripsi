@@ -114,6 +114,23 @@ func (h *handlerCarType) UpdateCarType(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
+func (h *handlerCarType) DeleteCarType(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	brand, err := h.CarTypeRepository.GetCarType(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	data, err := h.CarTypeRepository.DeleteCarType(brand, id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
 func respAddType(u models.CarType) carTypedto.CarTypeReq {
 	return carTypedto.CarTypeReq{
 		Name:   u.Name,

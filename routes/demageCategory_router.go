@@ -16,5 +16,5 @@ func DemageCategoryRoutes(e *echo.Group) {
 	e.GET("/demage-category/:id", h.GetDemageCategory)
 	e.POST("/demage-category", h.AddDemageCategory)
 	e.PATCH("/demage-category/:id", h.UpdateDemageCategory)
-	// e.DELETE("/car-brand/:id", h.DeleteCarBrand)
+	e.DELETE("/demage-category/:id", h.DeleteDemageCategory)
 }

@@ -17,5 +17,5 @@ func CarBrandRoutes(e *echo.Group) {
 	e.GET("/car-brand/:id", h.GetCarBrand)
 	e.POST("/car-brand", h.AddCarBrand)
 	e.PATCH("/car-brand/:id", h.UpdateCarBrand)
-	// e.DELETE("/car-brand/:id", h.DeleteCarBrand)
+	e.DELETE("/car-brand/:id", h.DeleteCarBrand)
 }

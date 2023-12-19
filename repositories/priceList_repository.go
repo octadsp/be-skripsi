@@ -12,7 +12,7 @@ type PriceListRepository interface {
 	GetPriceList(ID int) (models.PriceList, error)
 	AddPriceList(price models.PriceList) (models.PriceList, error)
 	UpdatePriceList(price models.PriceList) (models.PriceList, error)
-	DeletePriceList(price models.PriceList) (models.PriceList, error)
+	DeletePriceList(price models.PriceList, ID int) (models.PriceList, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -47,7 +47,7 @@ func (r *repository) UpdatePriceList(price models.PriceList) (models.PriceList, 
 	return price, err
 }
 
-func (r *repository) DeletePriceList(price models.PriceList) (models.PriceList, error) {
+func (r *repository) DeletePriceList(price models.PriceList, ID int) (models.PriceList, error) {
 	err := r.db.Delete(&price).Error // Using Delete method
 
 	return price, err

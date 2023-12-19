@@ -132,6 +132,23 @@ func (h *handlerCarBrand) UpdateCarBrand(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
+func (h *handlerCarBrand) DeleteCarBrand(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	brand, err := h.CarBrandRepository.GetCarBrand(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	data, err := h.CarBrandRepository.DeleteCarBrand(brand, id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
 func respAddBrand(u models.CarBrand) carBranddto.CarBrandReq {
 	return carBranddto.CarBrandReq{
 		Name:   u.Name,

@@ -13,7 +13,7 @@ type CarBrandRepository interface {
 	GetCarBrand(ID int) (models.CarBrand, error)
 	AddCarBrand(brand models.CarBrand) (models.CarBrand, error)
 	UpdateCarBrand(brand models.CarBrand) (models.CarBrand, error)
-	DeleteCarBrand(brand models.CarBrand) (models.CarBrand, error)
+	DeleteCarBrand(brand models.CarBrand, ID int) (models.CarBrand, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -55,7 +55,7 @@ func (r *repository) UpdateCarBrand(brand models.CarBrand) (models.CarBrand, err
 	return brand, err
 }
 
-func (r *repository) DeleteCarBrand(brand models.CarBrand) (models.CarBrand, error) {
+func (r *repository) DeleteCarBrand(brand models.CarBrand, ID int) (models.CarBrand, error) {
 	err := r.db.Delete(&brand).Error // Using Delete method
 
 	return brand, err

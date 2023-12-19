@@ -12,7 +12,7 @@ type DemageSubCategoryRepository interface {
 	GetDemageSubCategory(ID int) (models.DemageSubCategory, error)
 	AddDemageSubCategory(demage models.DemageSubCategory) (models.DemageSubCategory, error)
 	UpdateDemageSubCategory(demage models.DemageSubCategory) (models.DemageSubCategory, error)
-	DeleteDemageSubCategory(demage models.DemageSubCategory) (models.DemageSubCategory, error)
+	DeleteDemageSubCategory(demage models.DemageSubCategory, ID int) (models.DemageSubCategory, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -47,7 +47,7 @@ func (r *repository) UpdateDemageSubCategory(demage models.DemageSubCategory) (m
 	return demage, err
 }
 
-func (r *repository) DeleteDemageSubCategory(demage models.DemageSubCategory) (models.DemageSubCategory, error) {
+func (r *repository) DeleteDemageSubCategory(demage models.DemageSubCategory, ID int) (models.DemageSubCategory, error) {
 	err := r.db.Delete(&demage).Error // Using Delete method
 
 	return demage, err

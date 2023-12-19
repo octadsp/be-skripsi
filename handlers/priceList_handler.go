@@ -119,6 +119,23 @@ func (h *handlerPriceList) UpdatePriceList(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
+func (h *handlerPriceList) DeletePriceList(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	price, err := h.PriceListRepository.GetPriceList(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	data, err := h.PriceListRepository.DeletePriceList(price, id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
 func respAddprice(u models.PriceList) priceListsdto.PriceListResp {
 	return priceListsdto.PriceListResp{
 		DemageSubCategoryID: u.DemageSubCategoryID,

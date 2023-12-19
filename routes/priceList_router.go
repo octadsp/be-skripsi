@@ -16,5 +16,5 @@ func PriceListRoutes(e *echo.Group) {
 	e.GET("/price-list/:id", h.GetPriceList)
 	e.POST("/price-list", h.AddPriceList)
 	e.PATCH("/price-list/:id", h.UpdatePriceList)
-	// e.DELETE("/car-brand/:id", h.DeleteCarBrand)
+	e.DELETE("/price-list/:id", h.DeletePriceList)
 }
