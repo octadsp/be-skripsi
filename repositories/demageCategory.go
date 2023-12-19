@@ -8,7 +8,8 @@ import (
 
 // declaration of the DemageCategoryRepository interface, which defines methods
 type DemageCategoryRepository interface {
-	FindDemageCategories() ([]models.DemageCategory, error)
+	FindDemageCategories(offset, limit int) ([]models.DemageCategory, error)
+	FindAllDemageCategories() ([]models.DemageCategory, error)
 	GetDemageCategory(ID int) (models.DemageCategory, error)
 	AddDemageCategory(demage models.DemageCategory) (models.DemageCategory, error)
 	UpdateDemageCategory(demage models.DemageCategory) (models.DemageCategory, error)
@@ -21,7 +22,14 @@ func RepositoryDemageCategory(db *gorm.DB) *repository {
 }
 
 // queries the "DemageCategorys" table in the database and scans the results into a slice of DemageCategorys models.
-func (r *repository) FindDemageCategories() ([]models.DemageCategory, error) {
+func (r *repository) FindDemageCategories(offset, limit int) ([]models.DemageCategory, error) {
+	var demages []models.DemageCategory
+	err := r.db.Offset(offset).Limit(limit).Order("id").Find(&demages).Error // Using Find method
+
+	return demages, err
+}
+
+func (r *repository) FindAllDemageCategories() ([]models.DemageCategory, error) {
 	var demages []models.DemageCategory
 	err := r.db.Order("id").Find(&demages).Error // Using Find method
 

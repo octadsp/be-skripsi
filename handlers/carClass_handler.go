@@ -22,7 +22,27 @@ func HandlerCarClass(CarClassRepository repositories.CarClassRepository) *handle
 }
 
 func (h *handlerCarClass) FindCarClass(c echo.Context) error {
-	class, err := h.CarClassRepository.FindCarClass()
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	// Jumlah item per halaman
+	itemsPerPage := 10
+
+	// Hitung offset berdasarkan halaman
+	offset := (page - 1) * itemsPerPage
+
+	class, err := h.CarClassRepository.FindCarClass(offset, itemsPerPage)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: class})
+}
+
+func (h *handlerCarClass) FindAllCarClass(c echo.Context) error {
+	class, err := h.CarClassRepository.FindAllCarClass()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}

@@ -8,7 +8,8 @@ import (
 
 // declaration of the CarBrandRepository interface, which defines methods
 type CarTypeRepository interface {
-	FindCarTypes() ([]models.CarType, error)
+	FindCarTypes(offer, limit int) ([]models.CarType, error)
+	FindAllCarTypes() ([]models.CarType, error)
 	GetCarType(ID int) (models.CarType, error)
 	AddCarType(types models.CarType) (models.CarType, error)
 	UpdateCarType(types models.CarType) (models.CarType, error)
@@ -21,7 +22,14 @@ func RepositoryCarType(db *gorm.DB) *repository {
 }
 
 // queries the "cartypes" table in the database and scans the results into a slice of CarTypes models.
-func (r *repository) FindCarTypes() ([]models.CarType, error) {
+func (r *repository) FindCarTypes(offset, limit int) ([]models.CarType, error) {
+	var types []models.CarType
+	err := r.db.Offset(offset).Limit(limit).Order("id").Find(&types).Error // Using Find method
+
+	return types, err
+}
+
+func (r *repository) FindAllCarTypes() ([]models.CarType, error) {
 	var types []models.CarType
 	err := r.db.Order("id").Find(&types).Error // Using Find method
 

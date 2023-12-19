@@ -8,7 +8,8 @@ import (
 
 // declaration of the CarClassRepository interface, which defines methods
 type CarClassRepository interface {
-	FindCarClass() ([]models.CarClass, error)
+	FindCarClass(offset, limit int) ([]models.CarClass, error)
+	FindAllCarClass() ([]models.CarClass, error)
 	GetCarClass(ID int) (models.CarClass, error)
 	AddCarClass(class models.CarClass) (models.CarClass, error)
 	UpdateCarClass(class models.CarClass) (models.CarClass, error)
@@ -21,7 +22,14 @@ func RepositoryCarClass(db *gorm.DB) *repository {
 }
 
 // queries the "carclass" table in the database and scans the results into a slice of CarClass models.
-func (r *repository) FindCarClass() ([]models.CarClass, error) {
+func (r *repository) FindCarClass(offset, limit int) ([]models.CarClass, error) {
+	var class []models.CarClass
+	err := r.db.Offset(offset).Limit(limit).Order("id").Preload("CarBrand").Preload("CarType").Find(&class).Error // Using Find method
+
+	return class, err
+}
+
+func (r *repository) FindAllCarClass() ([]models.CarClass, error) {
 	var class []models.CarClass
 	err := r.db.Order("id").Preload("CarBrand").Preload("CarType").Find(&class).Error // Using Find method
 

@@ -22,7 +22,27 @@ func HandlerCarType(CarTypeRepository repositories.CarTypeRepository) *handlerCa
 }
 
 func (h *handlerCarType) FindCarTypes(c echo.Context) error {
-	types, err := h.CarTypeRepository.FindCarTypes()
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	// Jumlah item per halaman
+	itemsPerPage := 10
+
+	// Hitung offset berdasarkan halaman
+	offset := (page - 1) * itemsPerPage
+
+	types, err := h.CarTypeRepository.FindCarTypes(offset, itemsPerPage)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: types})
+}
+
+func (h *handlerCarType) FindAllCarTypes(c echo.Context) error {
+	types, err := h.CarTypeRepository.FindAllCarTypes()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}

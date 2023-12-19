@@ -13,6 +13,7 @@ func CarClassRoutes(e *echo.Group) {
 	h := handlers.HandlerCarClass(carClassRepository)
 
 	e.GET("/car-class", h.FindCarClass)
+	e.GET("/car-all-class", h.FindAllCarClass)
 	e.GET("/car-class/:id", h.GetCarClass)
 	e.POST("/car-class", h.AddCarClass)
 	e.PATCH("/car-class/:id", h.UpdateCarClass)

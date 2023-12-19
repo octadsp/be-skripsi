@@ -13,6 +13,7 @@ func PriceListRoutes(e *echo.Group) {
 	h := handlers.HandlerPriceList(priceListRepository)
 
 	e.GET("/price-lists", h.FindPriceLists)
+	e.GET("/price-all-lists", h.FindAllPriceLists)
 	e.GET("/price-list/:id", h.GetPriceList)
 	e.POST("/price-list", h.AddPriceList)
 	e.PATCH("/price-list/:id", h.UpdatePriceList)

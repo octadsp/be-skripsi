@@ -13,6 +13,7 @@ func DemageCategoryRoutes(e *echo.Group) {
 	h := handlers.HandlerDemageCategory(demageCategoryRepository)
 
 	e.GET("/demage-categories", h.FindDemageCategories)
+	e.GET("/demage-all-categories", h.FindAllDemageCategories)
 	e.GET("/demage-category/:id", h.GetDemageCategory)
 	e.POST("/demage-category", h.AddDemageCategory)
 	e.PATCH("/demage-category/:id", h.UpdateDemageCategory)

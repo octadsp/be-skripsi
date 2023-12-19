@@ -22,7 +22,27 @@ func HandlerPriceList(PriceListRepository repositories.PriceListRepository) *han
 }
 
 func (h *handlerPriceList) FindPriceLists(c echo.Context) error {
-	price, err := h.PriceListRepository.FindPriceLists()
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	// Jumlah item per halaman
+	itemsPerPage := 10
+
+	// Hitung offset berdasarkan halaman
+	offset := (page - 1) * itemsPerPage
+
+	price, err := h.PriceListRepository.FindPriceLists(offset, itemsPerPage)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: price})
+}
+
+func (h *handlerPriceList) FindAllPriceLists(c echo.Context) error {
+	price, err := h.PriceListRepository.FindAllPriceLists()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}

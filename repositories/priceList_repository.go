@@ -8,7 +8,8 @@ import (
 
 // declaration of the PriceListRepository interface, which defines methods
 type PriceListRepository interface {
-	FindPriceLists() ([]models.PriceList, error)
+	FindPriceLists(offset, limit int) ([]models.PriceList, error)
+	FindAllPriceLists() ([]models.PriceList, error)
 	GetPriceList(ID int) (models.PriceList, error)
 	AddPriceList(price models.PriceList) (models.PriceList, error)
 	UpdatePriceList(price models.PriceList) (models.PriceList, error)
@@ -21,7 +22,14 @@ func RepositoryPriceList(db *gorm.DB) *repository {
 }
 
 // queries the "pricelists" table in the database and scans the results into a slice of PriceLists models.
-func (r *repository) FindPriceLists() ([]models.PriceList, error) {
+func (r *repository) FindPriceLists(offset, limit int) ([]models.PriceList, error) {
+	var prices []models.PriceList
+	err := r.db.Offset(offset).Limit(limit).Order("id").Find(&prices).Error // Using Find method
+
+	return prices, err
+}
+
+func (r *repository) FindAllPriceLists() ([]models.PriceList, error) {
 	var prices []models.PriceList
 	err := r.db.Order("id").Find(&prices).Error // Using Find method
 

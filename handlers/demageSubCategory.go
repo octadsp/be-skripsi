@@ -22,7 +22,27 @@ func HandlerDemageSubCategory(DemageSubCategory repositories.DemageSubCategoryRe
 }
 
 func (h *handlerDemageSubCategory) FindDemageSubCategories(c echo.Context) error {
-	demages, err := h.DemageSubCategory.FindDemageSubCategories()
+	page, err := strconv.Atoi(c.QueryParam("page"))
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	// Jumlah item per halaman
+	itemsPerPage := 10
+
+	// Hitung offset berdasarkan halaman
+	offset := (page - 1) * itemsPerPage
+
+	demages, err := h.DemageSubCategory.FindDemageSubCategories(offset, itemsPerPage)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: demages})
+}
+
+func (h *handlerDemageSubCategory) FindAllDemageSubCategories(c echo.Context) error {
+	demages, err := h.DemageSubCategory.FindAllDemageSubCategories()
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}

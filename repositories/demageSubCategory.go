@@ -8,7 +8,8 @@ import (
 
 // declaration of the DemageCategoryRepository interface, which defines methods
 type DemageSubCategoryRepository interface {
-	FindDemageSubCategories() ([]models.DemageSubCategory, error)
+	FindDemageSubCategories(offset, limit int) ([]models.DemageSubCategory, error)
+	FindAllDemageSubCategories() ([]models.DemageSubCategory, error)
 	GetDemageSubCategory(ID int) (models.DemageSubCategory, error)
 	AddDemageSubCategory(demage models.DemageSubCategory) (models.DemageSubCategory, error)
 	UpdateDemageSubCategory(demage models.DemageSubCategory) (models.DemageSubCategory, error)
@@ -21,7 +22,14 @@ func RepositoryDemageSubCategory(db *gorm.DB) *repository {
 }
 
 // queries the "DemageCategorys" table in the database and scans the results into a slice of DemageCategorys models.
-func (r *repository) FindDemageSubCategories() ([]models.DemageSubCategory, error) {
+func (r *repository) FindDemageSubCategories(offset, limit int) ([]models.DemageSubCategory, error) {
+	var demages []models.DemageSubCategory
+	err := r.db.Offset(offset).Limit(limit).Order("id").Find(&demages).Error // Using Find method
+
+	return demages, err
+}
+
+func (r *repository) FindAllDemageSubCategories() ([]models.DemageSubCategory, error) {
 	var demages []models.DemageSubCategory
 	err := r.db.Order("id").Find(&demages).Error // Using Find method
 
