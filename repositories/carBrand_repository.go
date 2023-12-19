@@ -8,7 +8,7 @@ import (
 
 // declaration of the CarBrandRepository interface, which defines methods
 type CarBrandRepository interface {
-	FindCarBrands() ([]models.CarBrand, error)
+	FindCarBrands(offset, limit int) ([]models.CarBrand, error)
 	GetCarBrand(ID int) (models.CarBrand, error)
 	AddCarBrand(brand models.CarBrand) (models.CarBrand, error)
 	UpdateCarBrand(brand models.CarBrand) (models.CarBrand, error)
@@ -21,9 +21,9 @@ func RepositoryCarBrand(db *gorm.DB) *repository {
 }
 
 // queries the "carbrands" table in the database and scans the results into a slice of CarBrands models.
-func (r *repository) FindCarBrands() ([]models.CarBrand, error) {
+func (r *repository) FindCarBrands(offset, limit int) ([]models.CarBrand, error) {
 	var brands []models.CarBrand
-	err := r.db.Order("id").Find(&brands).Error // Using Find method
+	err := r.db.Offset(offset).Limit(limit).Order("id").Find(&brands).Error // Using Find method
 
 	return brands, err
 }
