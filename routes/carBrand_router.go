@@ -13,6 +13,7 @@ func CarBrandRoutes(e *echo.Group) {
 	h := handlers.HandlerCarBrand(carBrandRepository)
 
 	e.GET("/car-brands", h.FindCarBrands)
+	e.GET("/car-all-brands", h.FindAllBrands)
 	e.GET("/car-brand/:id", h.GetCarBrand)
 	e.POST("/car-brand", h.AddCarBrand)
 	e.PATCH("/car-brand/:id", h.UpdateCarBrand)
