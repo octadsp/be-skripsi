@@ -24,14 +24,14 @@ func RepositoryDemageSubCategory(db *gorm.DB) *repository {
 // queries the "DemageCategorys" table in the database and scans the results into a slice of DemageCategorys models.
 func (r *repository) FindDemageSubCategories(offset, limit int) ([]models.DemageSubCategory, error) {
 	var demages []models.DemageSubCategory
-	err := r.db.Offset(offset).Limit(limit).Order("id").Find(&demages).Error // Using Find method
+	err := r.db.Offset(offset).Limit(limit).Order("id").Preload("DemageCategory").Find(&demages).Error // Using Find method
 
 	return demages, err
 }
 
 func (r *repository) FindAllDemageSubCategories() ([]models.DemageSubCategory, error) {
 	var demages []models.DemageSubCategory
-	err := r.db.Order("id").Find(&demages).Error // Using Find method
+	err := r.db.Order("id").Preload("DemageCategory").Find(&demages).Error // Using Find method
 
 	return demages, err
 }
