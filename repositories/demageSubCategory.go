@@ -31,7 +31,7 @@ func (r *repository) FindDemageSubCategories(offset, limit int) ([]models.Demage
 
 func (r *repository) FindAllDemageSubCategories() ([]models.DemageSubCategory, error) {
 	var demages []models.DemageSubCategory
-	err := r.db.Order("DemageCategoryID").Preload("DemageCategory").Find(&demages).Error // Using Find method
+	err := r.db.Preload("DemageCategory").Order("DemageCategoryID").Find(&demages).Error // Using Find method
 
 	return demages, err
 }
