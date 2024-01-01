@@ -63,6 +63,16 @@ func (h *handlerCarClass) GetCarClass(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: class})
 }
 
+func (h *handlerCarClass) GetCarClasbyBrand(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("brandID"))
+
+	class, err := h.CarClassRepository.GetCarClasbyBrand(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: class})
+}
+
 func (h *handlerCarClass) AddCarClass(c echo.Context) error {
 	// userLogin := c.Get("userLogin")
 	// userId, ok := userLogin.(jwt.MapClaims)["id"].(float64)

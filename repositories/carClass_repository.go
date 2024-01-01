@@ -14,6 +14,8 @@ type CarClassRepository interface {
 	AddCarClass(class models.CarClass) (models.CarClass, error)
 	UpdateCarClass(class models.CarClass) (models.CarClass, error)
 	DeleteCarClass(class models.CarClass, ID int) (models.CarClass, error)
+
+	GetCarClasbyBrand(brandID int) ([]models.CarClass, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -40,6 +42,13 @@ func (r *repository) GetCarClass(ID int) (models.CarClass, error) {
 	var class models.CarClass
 	err := r.db.First(&class, ID).Error // Using First method
 
+	return class, err
+}
+
+func (r *repository) GetCarClasbyBrand(brandID int) ([]models.CarClass, error) {
+	var class []models.CarClass
+	err := r.db.Preload("CarBrand").Preload("CarType").First(&class, "car_brand_id=?", brandID).Error
+	
 	return class, err
 }
 
