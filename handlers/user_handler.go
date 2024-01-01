@@ -59,12 +59,9 @@ func (h *handlerUser) UpdateUser(c echo.Context) error {
 		FullName: c.FormValue("fullname"),
 		LastName: c.FormValue("lastname"),
 		Email:    c.FormValue("email"),
-		Password: c.FormValue("password"),
 		Phone:    c.FormValue("phone"),
 		Address:  c.FormValue("address"),
 		Avatar:   imageFile,
-		Status:   c.FormValue("status"),
-		Roles:    c.FormValue("roles"),
 	}
 
 	validation := validator.New()
@@ -103,20 +100,11 @@ func (h *handlerUser) UpdateUser(c echo.Context) error {
 	if request.Email != "" {
 		user.Email = request.Email
 	}
-	if request.Password != "" {
-		user.Password = request.Password
-	}
 	if request.Phone != "" {
 		user.Phone = request.Phone
 	}
 	if request.Address != "" {
 		user.Address = request.Address
-	}
-	if request.Status != "" {
-		user.Status = request.Status
-	}
-	if request.Roles != "" {
-		user.Roles = request.Roles
 	}
 	if request.Avatar != "" {
 		user.Avatar = resp.SecureURL

@@ -1,6 +1,7 @@
 module be-skripsi
 
 go 1.21.4
+// go 1.20
 
 require (
 	github.com/cloudinary/cloudinary-go/v2 v2.6.0 // indirect
