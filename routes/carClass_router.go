@@ -15,7 +15,7 @@ func CarClassRoutes(e *echo.Group) {
 	e.GET("/car-class", h.FindCarClass)
 	e.GET("/car-all-class", h.FindAllCarClass)
 	e.GET("/car-class/:id", h.GetCarClass)
-	e.GET("/car-class/:brandID", h.GetCarClasbyBrand)
+	e.GET("/car-class-brand/:brandID", h.GetCarClasbyBrand)
 	e.POST("/car-class", h.AddCarClass)
 	e.PATCH("/car-class/:id", h.UpdateCarClass)
 	e.DELETE("/car-class/:id", h.DeleteCarClass)
