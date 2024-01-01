@@ -11,7 +11,7 @@ import (
 func UploadImage(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// Get the uploaded file from the request
-		file, err := c.FormFile("thumbnail")
+		file, err := c.FormFile("image")
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, err)
 		}
@@ -38,7 +38,7 @@ func UploadImage(next echo.HandlerFunc) echo.HandlerFunc {
 		// filename := data[8:] // split uploads/
 
 		// Set the filename as a context variable
-		c.Set("imageFile", data)
+		c.Set("image", data)
 		return next(c)
 	}
 }

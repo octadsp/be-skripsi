@@ -53,7 +53,7 @@ func (h *handlerUser) UpdateUser(c echo.Context) error {
 	// userId := userLogin.(jwt.MapClaims)["id"].(float64)
 	id, _ := strconv.Atoi(c.Param("id"))
 
-	imageFile := c.Get("imageFile").(string)
+	imageFile := c.Get("image").(string)
 
 	request := usersdto.UserUpdateRequest{
 		FullName: c.FormValue("fullname"),
