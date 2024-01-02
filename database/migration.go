@@ -25,6 +25,7 @@ func RunMigration() {
 		&models.SimClass{},
 		&models.User{},
 		&models.Notification{},
+		&models.Reservation{},
 	)
 
 	if err != nil {
