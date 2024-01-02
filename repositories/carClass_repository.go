@@ -40,7 +40,7 @@ func (r *repository) FindAllCarClass() ([]models.CarClass, error) {
 
 func (r *repository) GetCarClass(ID int) (models.CarClass, error) {
 	var class models.CarClass
-	err := r.db.First(&class, ID).Error // Using First method
+	err := r.db.Preload("CarBrand").Preload("CarType").First(&class, ID).Error // Using First method
 
 	return class, err
 }
