@@ -15,4 +15,5 @@ func RouteInit(e *echo.Group) {
 	PriceListRoutes(e)
 	DemageCategoryRoutes(e)
 	DemageSubCategoryRoutes(e)
+	NotificationRoutes(e)
 }
