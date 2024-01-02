@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -49,8 +48,8 @@ func (h *handlerNotification) GetNotif(c echo.Context) error {
 }
 
 func (h *handlerNotification) CreateNotification(c echo.Context) error {
-	userLogin := c.Get("userLogin")
-	userId := userLogin.(jwt.MapClaims)["id"].(uint32)
+	// userLogin := c.Get("userLogin")
+	// userId := userLogin.(jwt.MapClaims)["id"].(uint32)
 
 	request := new(notificationsdto.NotifReq)
 	if err := c.Bind(request); err != nil {
@@ -64,7 +63,7 @@ func (h *handlerNotification) CreateNotification(c echo.Context) error {
 	}
 
 	notif := models.Notification{
-		UserID:  userId,
+		UserID:  request.UserID,
 		Message: request.Message,
 		IsRead:  false,
 		CreatedAt: time.Now(),
