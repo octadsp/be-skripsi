@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -23,12 +24,9 @@ func HandlerNotification(NotificationRepository repositories.NotificationReposit
 
 func (h *handlerNotification) GetNotificationsByUserID(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("userID"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid user ID"})
-	}
 
 	// Konversi userID ke uint
-	userIDUint := uint(userID)
+	userIDUint := uint(id)
 
 	// Panggil fungsi repository untuk mendapatkan notifikasi berdasarkan ID pengguna
 	notifications, err := h.NotificationRepository.GetNotificationsByUserID(userIDUint)
@@ -39,9 +37,20 @@ func (h *handlerNotification) GetNotificationsByUserID(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: notifications})
 }
 
+func (h *handlerNotification) GetNotif(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	post, err := h.NotificationRepository.GetNotif(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: post})
+}
+
 func (h *handlerNotification) CreateNotification(c echo.Context) error {
 	userLogin := c.Get("userLogin")
-	userId := userLogin.(jwt.MapClaims)["id"].(float64)
+	userId := userLogin.(jwt.MapClaims)["id"].(uint32)
 
 	request := new(notificationsdto.NotifReq)
 	if err := c.Bind(request); err != nil {
@@ -54,14 +63,14 @@ func (h *handlerNotification) CreateNotification(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	notif := &models.Notification{
+	notif := models.Notification{
 		UserID:  userId,
 		Message: request.Message,
 		IsRead:  false,
 		CreatedAt: time.Now(),
 	}
 
-	data, err := h.PostRepository.CreateNotification(notif)
+	data, err := h.NotificationRepository.CreateNotification(notif)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
@@ -71,30 +80,33 @@ func (h *handlerNotification) CreateNotification(c echo.Context) error {
 }
 
 func (h *handlerNotification) UpdateNotificationStatus(c echo.Context) error {
-	notifID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid notification ID"})
-	}
+    notifID, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid notification ID"})
+    }
 
-	isReadParam := c.QueryParam("isRead")
-	isRead, err := strconv.ParseBool(isReadParam)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid isRead parameter"})
-	}
+    isReadParam := c.QueryParam("isRead")
+    isRead, err := strconv.ParseBool(isReadParam)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid isRead parameter"})
+    }
 
-	notification, err := h.NotificationRepository.GetNotif(uint(notifID))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	}
+    // Get the existing notification
+    notification, err := h.NotificationRepository.GetNotif(notifID)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+    }
 
-	// Update read status
-	notification.IsRead = isRead
+    // Update read status
+    notification.IsRead = isRead
 
-	err = h.NotificationRepository.UpdateNotificationStatus(uint(notifID), notification.IsRead)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
-	}
+    // Update the notification status and get the updated notification
+    updatedNotification, err := h.NotificationRepository.UpdateNotificationStatus(uint(notifID), notification.IsRead)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+    }
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: notification})
+    return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: updatedNotification})
 }
+
 

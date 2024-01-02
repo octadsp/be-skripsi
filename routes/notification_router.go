@@ -12,7 +12,7 @@ func NotificationRoutes(e *echo.Group) {
 	notificationRepository := repositories.RepositoryNotification(pg.DB)
 	h := handlers.HandlerNotification(notificationRepository)
 
-	e.GET("/notifications/:userID", h.GetNotificationsByUserIDHandler)
+	e.GET("/notifications/:userID", h.GetNotificationsByUserID)
 	e.GET("/notification/:id", h.GetNotif)
 	e.POST("/notification", h.CreateNotification)
 	e.PATCH("/notification/:notifID", h.UpdateNotificationStatus)

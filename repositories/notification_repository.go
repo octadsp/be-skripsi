@@ -39,8 +39,9 @@ func (r *repository) CreateNotification(notif models.Notification) (models.Notif
 	return notif, err
 }
 
-func (r *repository) UpdateNotificationStatus(notifID uint, isRead bool) error {
-	err := r.db.Model(&models.Notification{}).Where("id = ?", notifID).Update("is_read", isRead).Error
-	return err
+func (r *repository) UpdateNotificationStatus(notifID uint, isRead bool) (models.Notification, error) {
+    var notification models.Notification
+    err := r.db.Model(&models.Notification{}).Where("id = ?", notifID).Update("is_read", isRead).First(&notification).Error
+    return notification, err
 }
 
