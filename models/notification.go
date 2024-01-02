@@ -5,6 +5,7 @@ import "time"
 type Notification struct {
 	ID        uint32 `json:"id" gorm:"primary_key:auto_increment"`
 	UserID    uint32 `json:"user_id"`
+	User User `json:"user" gorm:"foreignKey:UserID"`
 	Message   string `json:"message" gorm:"type: varchar(150)"`
 	IsRead    bool `json:"is_read"`
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
