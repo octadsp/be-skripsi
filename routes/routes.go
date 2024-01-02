@@ -16,4 +16,5 @@ func RouteInit(e *echo.Group) {
 	DemageCategoryRoutes(e)
 	DemageSubCategoryRoutes(e)
 	NotificationRoutes(e)
+	ReservationRoutes(e)
 }
