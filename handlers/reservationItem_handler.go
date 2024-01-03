@@ -156,8 +156,9 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
-func respAddReservItem(u models.ReservationItem) reservItemdto.ReservationItemReq {
-	return reservItemdto.ReservationItemReq{
+func respAddReservItem(u models.ReservationItem) reservItemdto.ReservationItemResp {
+	return reservItemdto.ReservationItemResp{
+		ID:     u.ID,
 		Item:   u.Item,
 		Price:  u.Price,
 		Status: u.Status,
