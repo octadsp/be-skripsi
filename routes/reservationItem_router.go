@@ -2,6 +2,7 @@ package routes
 
 import (
 	"be-skripsi/handlers"
+	"be-skripsi/pkg/middleware"
 	"be-skripsi/pkg/pg"
 	"be-skripsi/repositories"
 
@@ -15,6 +16,6 @@ func ReservationItemRoutes(e *echo.Group) {
 	e.GET("/reservation-items", h.FindReservItems)
 	e.GET("/reservation-item/:id", h.GetReservItem)
 	e.POST("/reservation-item", h.AddReservItem)
-	e.PATCH("/reservation-item/:id", h.UpdateReservItem)
+	e.PATCH("/reservation-item/:id", middleware.UploadImage(h.UpdateReservItem))
 	// e.DELETE("/reservation-Item/:id", h.DeleteReservItem)
 }

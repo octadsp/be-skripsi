@@ -49,11 +49,11 @@ func (h *handlerReservationItem) GetReservItem(c echo.Context) error {
 }
 
 func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
-	imageFile := c.Get("image").(string)
+	// imageFile := c.Get("image").(string)
 	price, _ := strconv.Atoi(c.FormValue("price"))
 
 	request := reservItemdto.ReservationItemReqUpdate{
-		Image: imageFile,
+		Image: c.FormValue("image"),
 		Item:  c.FormValue("item"),
 		Price: int64(price),
 	}
@@ -64,16 +64,16 @@ func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	var ctx = context.Background()
-	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
-	var API_KEY = os.Getenv("API_KEY")
-	var API_SECRET = os.Getenv("API_SECRET")
+	// var ctx = context.Background()
+	// var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	// var API_KEY = os.Getenv("API_KEY")
+	// var API_SECRET = os.Getenv("API_SECRET")
 
 	// Add your Cloudinary credentials ...
-	cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+	// cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
 
 	// Upload file to Cloudinary ...
-	resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "waysgallery"})
+	// resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "waysgallery"})
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -81,7 +81,7 @@ func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
 
 	reserv := models.ReservationItem{
 		Item:   request.Item,
-		Image: resp.SecureURL,
+		Image:  request.Image,
 		Price:  int64(request.Price),
 		Status: "A",
 	}
