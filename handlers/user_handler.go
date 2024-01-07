@@ -56,12 +56,7 @@ func (h *handlerUser) UpdateUser(c echo.Context) error {
 	imageFile := c.Get("image").(string)
 
 	request := usersdto.UserUpdateRequest{
-		FullName: c.FormValue("fullname"),
-		LastName: c.FormValue("lastname"),
-		Email:    c.FormValue("email"),
-		Phone:    c.FormValue("phone"),
-		Address:  c.FormValue("address"),
-		Avatar:   imageFile,
+		Avatar: imageFile,
 	}
 
 	validation := validator.New()
@@ -91,6 +86,44 @@ func (h *handlerUser) UpdateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
+	if request.Avatar != "" {
+		user.Avatar = resp.SecureURL
+	}
+
+	data, err := h.UserRepository.UpdateUser(user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
+func (h *handlerUser) UpdateInfoUser(c echo.Context) error {
+	// userLogin := c.Get("userLogin")
+	// userId := userLogin.(jwt.MapClaims)["id"].(float64)
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	request := new(usersdto.UserUpdateRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	user, err := h.UserRepository.GetUser(id)
+	// user, err := h.UserRepository.GetUser(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
 	if request.FullName != "" {
 		user.FullName = request.FullName
 	}
@@ -106,11 +139,8 @@ func (h *handlerUser) UpdateUser(c echo.Context) error {
 	if request.Address != "" {
 		user.Address = request.Address
 	}
-	if request.Avatar != "" {
-		user.Avatar = resp.SecureURL
-	}
 
-	data, err := h.UserRepository.UpdateUser(user)
+	data, err := h.UserRepository.UpdateInfoUser(user)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}

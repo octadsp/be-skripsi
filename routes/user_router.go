@@ -15,6 +15,7 @@ func UserRoutes(e *echo.Group) {
 
 	e.GET("/users", h.FindUsers)
 	e.GET("/user/:id", h.GetUser)
-	e.PATCH("/user/:id", middleware.UploadImage(h.UpdateUser))
+	e.PATCH("/user-image/:id", middleware.UploadImage(h.UpdateUser))
+	e.PATCH("/user-info/:id", h.UpdateInfoUser)
 	e.DELETE("/user/:id", h.DeleteUser)
 }
