@@ -114,10 +114,6 @@ func (h *handlerUser) UpdateInfoUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
 	user, err := h.UserRepository.GetUser(id)
 	// user, err := h.UserRepository.GetUser(id)
 	if err != nil {
@@ -132,6 +128,9 @@ func (h *handlerUser) UpdateInfoUser(c echo.Context) error {
 	}
 	if request.Email != "" {
 		user.Email = request.Email
+	}
+	if request.Institute != "" {
+		user.Institute = request.Institute
 	}
 	if request.Phone != "" {
 		user.Phone = request.Phone
@@ -167,11 +166,12 @@ func (h *handlerUser) DeleteUser(c echo.Context) error {
 
 func convertResponse(u models.User) usersdto.UserResponse {
 	return usersdto.UserResponse{
-		ID:       u.ID,
-		FullName: u.FullName,
-		LastName: u.LastName,
-		Email:    u.Email,
-		Status:   u.Status,
-		Roles:    u.Roles,
+		ID:        u.ID,
+		FullName:  u.FullName,
+		LastName:  u.LastName,
+		Institute: u.Institute,
+		Email:     u.Email,
+		Status:    u.Status,
+		Roles:     u.Roles,
 	}
 }

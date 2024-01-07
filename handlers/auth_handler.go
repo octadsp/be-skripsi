@@ -44,15 +44,16 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	}
 
 	user := models.User{
-		FullName: request.FullName,
-		LastName: request.LastName,
-		Address:  request.Address,
-		Email:    request.Email,
-		Password: password,
-		Avatar:   "https://res.cloudinary.com/dpxazv6a6/image/upload/v1685689207/skripsi/defaultAvatar_gsslte.png",
-		Phone:    request.Phone,
-		Status:   "A",
-		Roles:    request.Roles,
+		FullName:  request.FullName,
+		LastName:  request.LastName,
+		Address:   request.Address,
+		Institute: request.Institute,
+		Email:     request.Email,
+		Password:  password,
+		Avatar:    "https://res.cloudinary.com/dpxazv6a6/image/upload/v1685689207/skripsi/defaultAvatar_gsslte.png",
+		Phone:     request.Phone,
+		Status:    "A",
+		Roles:     request.Roles,
 	}
 
 	data, err := h.AuthRepository.Register(user)
@@ -74,16 +75,17 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	}
 
 	registerResponse := authdto.RegisterResponse{
-		ID:       data.ID,
-		FullName: data.FullName,
-		LastName: data.LastName,
-		Address:  data.Address,
-		Phone:    data.Phone,
-		Email:    data.Email,
-		Avatar:   data.Avatar,
-		Status:   data.Status,
-		Roles:    data.Roles,
-		Token:    token,
+		ID:        data.ID,
+		FullName:  data.FullName,
+		LastName:  data.LastName,
+		Address:   data.Address,
+		Institute: data.Institute,
+		Phone:     data.Phone,
+		Email:     data.Email,
+		Avatar:    data.Avatar,
+		Status:    data.Status,
+		Roles:     data.Roles,
+		Token:     token,
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: registerResponse})
@@ -127,16 +129,17 @@ func (h *handlerAuth) Login(c echo.Context) error {
 	}
 
 	loginResponse := authdto.LoginResponse{
-		ID:       user.ID,
-		FullName: user.FullName,
-		LastName: user.LastName,
-		Email:    user.Email,
-		Phone:    user.Phone,
-		Address:  user.Address,
-		Avatar:   user.Avatar,
-		Status:   user.Status,
-		Roles:    user.Roles,
-		Token:    token,
+		ID:        user.ID,
+		FullName:  user.FullName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Institute: user.Institute,
+		Phone:     user.Phone,
+		Address:   user.Address,
+		Avatar:    user.Avatar,
+		Status:    user.Status,
+		Roles:     user.Roles,
+		Token:     token,
 		ExpiresIn: expiresIn,
 	}
 

@@ -75,9 +75,9 @@ func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
 	// Upload file to Cloudinary ...
 	// resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "waysgallery"})
 
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// }
 
 	reserv := models.ReservationItem{
 		Item:   request.Item,
