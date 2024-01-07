@@ -23,7 +23,7 @@ func RepositoryReservation(db *gorm.DB) *repository {
 // queries the "reservation_s" table in the database and scans the results into a slice of Reservations models.
 func (r *repository) FindReservations() ([]models.Reservation, error) {
 	var reserv []models.Reservation
-	err := r.db.Preload("ReservationItem").Preload("User").Order("order_masuk").Find(&reserv).Error // Using Find method
+	err := r.db.Preload("ReservationItem").Preload("User").Order("order_masuk desc").Find(&reserv).Error // Using Find method
 
 	return reserv, err
 }
