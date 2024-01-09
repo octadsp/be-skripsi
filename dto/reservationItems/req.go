@@ -1,15 +1,17 @@
 package reservationitemsdto
 
 type ReservationItemReq struct {
-	Item   string `json:"item" form:"item"`
-	Image  string `json:"image" form:"image"`
-	Price  int64  `json:"price" form:"price"`
-	Status string `json:"status" form:"status"`
+	ReservationID       uint32 `json:"reservation_id" form:"reservation_id"`
+	DemageSubCategoryID uint32 `json:"demage_sub_category_id" form:"demage_sub_category_id"`
+	Image               string `json:"image" form:"image"`
+	Price               int64  `json:"price" form:"price"`
+	Status              bool   `json:"status" form:"status"`
 }
 
 type ReservationItemReqUpdate struct {
-	Item   string `json:"item" form:"item"`
-	Image  string `json:"image" form:"image"`
-	Price  int64  `json:"price" form:"price"`
-	Status string `json:"status" form:"status"`
+	ReservationID       uint32 `json:"reservation_id" form:"reservation_id"`
+	DemageSubCategoryID uint32 `json:"demage_sub_category_id" form:"demage_sub_category_id"`
+	Image               string `json:"image" form:"image"`
+	Price               int64  `json:"price" form:"price"`
+	Status              bool   `json:"status" form:"status"`
 }

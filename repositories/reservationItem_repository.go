@@ -23,14 +23,14 @@ func RepositoryReservationItem(db *gorm.DB) *repository {
 // queries the "reservation_Items" table in the database and scans the results into a slice of ReservationItems models.
 func (r *repository) FindReservItems() ([]models.ReservationItem, error) {
 	var reservItem []models.ReservationItem
-	err := r.db.Find(&reservItem).Error // Using Find method
+	err := r.db.Preload("Reservation").Preload("DemageSubCategory").Preload("User").Find(&reservItem).Error // Using Find method
 
 	return reservItem, err
 }
 
 func (r *repository) GetReservItem(ID int) (models.ReservationItem, error) {
 	var reservItem models.ReservationItem
-	err := r.db.First(&reservItem, ID).Error // Using First method
+	err := r.db.Preload("Reservation").Preload("DemageSubCategory").Preload("User").First(&reservItem, ID).Error // Using First method
 
 	return reservItem, err
 }

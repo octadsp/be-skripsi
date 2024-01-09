@@ -49,13 +49,19 @@ func (h *handlerReservationItem) GetReservItem(c echo.Context) error {
 }
 
 func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
-	// imageFile := c.Get("image").(string)
+	imageFile := c.Get("image").(string)
 	price, _ := strconv.Atoi(c.FormValue("price"))
+	reservID, _ := strconv.ParseUint(c.FormValue("reservation_id"), 10, 32)
+	demageID, _ := strconv.ParseUint(c.FormValue("demage_sub_category_id"), 10, 32)
+	statusString := c.FormValue("status")
+	status, _ := strconv.ParseBool(statusString)
 
 	request := reservItemdto.ReservationItemReqUpdate{
-		Image: c.FormValue("image"),
-		Item:  c.FormValue("item"),
-		Price: int64(price),
+		ReservationID:       uint32(reservID),
+		DemageSubCategoryID: uint32(demageID),
+		Image:               imageFile,
+		Price:               int64(price),
+		Status:              status,
 	}
 
 	validation := validator.New()
@@ -64,26 +70,27 @@ func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	// var ctx = context.Background()
-	// var CLOUD_NAME = os.Getenv("CLOUD_NAME")
-	// var API_KEY = os.Getenv("API_KEY")
-	// var API_SECRET = os.Getenv("API_SECRET")
+	var ctx = context.Background()
+	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	var API_KEY = os.Getenv("API_KEY")
+	var API_SECRET = os.Getenv("API_SECRET")
 
 	// Add your Cloudinary credentials ...
-	// cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+	cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
 
 	// Upload file to Cloudinary ...
-	// resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "waysgallery"})
+	resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "waysgallery"})
 
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	reserv := models.ReservationItem{
-		Item:   request.Item,
-		Image:  request.Image,
-		Price:  int64(request.Price),
-		Status: "A",
+		ReservationID:       request.ReservationID,
+		DemageSubCategoryID: request.DemageSubCategoryID,
+		Image:               resp.SecureURL,
+		Price:               request.Price,
+		Status:              request.Status,
 	}
 
 	data, err := h.ReservationItemRepository.AddReservItem(reserv)
@@ -101,10 +108,17 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 	imageFile := c.Get("image").(string)
 	price, _ := strconv.Atoi(c.FormValue("price"))
 
+	reservID, _ := strconv.ParseUint(c.FormValue("reservation_id"), 10, 32)
+	demageID, _ := strconv.ParseUint(c.FormValue("demage_sub_category_id"), 10, 32)
+	statusString := c.FormValue("status")
+	status, _ := strconv.ParseBool(statusString)
+
 	request := reservItemdto.ReservationItemReqUpdate{
-		Image: imageFile,
-		Item:  c.FormValue("item"),
-		Price: int64(price),
+		ReservationID:       uint32(reservID),
+		DemageSubCategoryID: uint32(demageID),
+		Image:               imageFile,
+		Price:               int64(price),
+		Status:              status,
 	}
 
 	validation := validator.New()
@@ -134,8 +148,12 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	if request.Item != "" {
-		reserv.Item = request.Item
+	if request.ReservationID != 0 {
+		reserv.ReservationID = request.ReservationID
+	}
+
+	if request.DemageSubCategoryID != 0 {
+		reserv.DemageSubCategoryID = request.DemageSubCategoryID
 	}
 
 	if request.Image != "" {
@@ -144,6 +162,10 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 
 	if request.Price != 0 {
 		reserv.Price = request.Price
+	}
+
+	if request.Status != false {
+		reserv.Status = request.Status
 	}
 
 	reserv.UpdatedAt = time.Now()
@@ -158,9 +180,10 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 
 func respAddReservItem(u models.ReservationItem) reservItemdto.ReservationItemResp {
 	return reservItemdto.ReservationItemResp{
-		ID:     u.ID,
-		Item:   u.Item,
-		Price:  u.Price,
-		Status: u.Status,
+		ID:                  u.ID,
+		ReservationID:       u.ReservationID,
+		DemageSubCategoryID: u.DemageSubCategoryID,
+		Price:               u.Price,
+		Status:              u.Status,
 	}
 }

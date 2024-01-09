@@ -79,8 +79,6 @@ func (h *handlerReservation) AddReservation(c echo.Context) error {
 		DriverAge:      request.DriverAge,
 		DriverLicense:  request.DriverLicense,
 
-		ReservationItemID: request.ReservationItemID,
-
 		CreatedAt: time.Now(),
 	}
 
@@ -173,9 +171,6 @@ func (h *handlerReservation) UpdateReservation(c echo.Context) error {
 	}
 	if request.DriverLicense != "" {
 		reserv.DriverLicense = request.DriverLicense
-	}
-	if request.ReservationItemID != 0 {
-		reserv.ReservationItemID = request.ReservationItemID
 	}
 
 	reserv.UpdatedAt = time.Now()
