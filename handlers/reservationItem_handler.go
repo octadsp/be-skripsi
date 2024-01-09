@@ -164,7 +164,7 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 		reserv.Price = request.Price
 	}
 
-	if request.Status != false {
+	if request.Status {
 		reserv.Status = request.Status
 	}
 
