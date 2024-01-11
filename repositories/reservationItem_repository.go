@@ -31,7 +31,6 @@ func (r *repository) FindReservItems() ([]models.ReservationItem, error) {
 func (r *repository) GetReservItem(ID int) (models.ReservationItem, error) {
 	var reservItem models.ReservationItem
 	err := r.db.Preload("Reservation").Preload("DemageSubCategory").First(&reservItem, ID).Error // Using First method
-
 	return reservItem, err
 }
 
