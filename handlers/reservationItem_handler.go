@@ -110,15 +110,12 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 
 	reservID, _ := strconv.ParseUint(c.FormValue("reservation_id"), 10, 32)
 	demageID, _ := strconv.ParseUint(c.FormValue("demage_sub_category_id"), 10, 32)
-	statusString := c.FormValue("status")
-	status, _ := strconv.ParseBool(statusString)
 
 	request := reservItemdto.ReservationItemReqUpdate{
 		ReservationID:       uint32(reservID),
 		DemageSubCategoryID: uint32(demageID),
 		Image:               imageFile,
 		Price:               int64(price),
-		Status:              status,
 	}
 
 	validation := validator.New()
@@ -164,13 +161,37 @@ func (h *handlerReservationItem) UpdateReservItem(c echo.Context) error {
 		reserv.Price = request.Price
 	}
 
+	reserv.UpdatedAt = time.Now()
+
+	data, err := h.ReservationItemRepository.UpdateReservItem(reserv)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
+func (h *handlerReservationItem) UpdateStatus(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	request := new(reservItemdto.ReservationItemReqUpdate)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	reserv, err := h.ReservationItemRepository.GetReservItem(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
 	if request.Status {
 		reserv.Status = request.Status
 	}
 
 	reserv.UpdatedAt = time.Now()
 
-	data, err := h.ReservationItemRepository.UpdateReservItem(reserv)
+	data, err := h.ReservationItemRepository.UpdateStatus(reserv)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}

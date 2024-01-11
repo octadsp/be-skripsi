@@ -13,6 +13,8 @@ type ReservationItemRepository interface {
 	AddReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 	UpdateReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 	// DeleteReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
+
+	UpdateStatus(status models.ReservationItem) (models.ReservationItem, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -44,6 +46,12 @@ func (r *repository) UpdateReservItem(reservItem models.ReservationItem) (models
 	err := r.db.Save(&reservItem).Error
 
 	return reservItem, err
+}
+
+func (r *repository) UpdateStatus(status models.ReservationItem) (models.ReservationItem, error) {
+	err := r.db.Save(&status).Error
+
+	return status, err
 }
 
 // func (r *repository) DeleteReservItem(reservItem models.ReservationItem) (models.ReservationItem, error) {
