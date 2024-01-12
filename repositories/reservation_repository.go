@@ -12,6 +12,7 @@ type ReservationRepository interface {
 	GetReservation(ID int) (models.Reservation, error)
 	AddReservation(reserv models.Reservation) (models.Reservation, error)
 	UpdateReservation(reserv models.Reservation) (models.Reservation, error)
+	UpdateStatusReserv(status models.Reservation) (models.Reservation, error)
 	DeleteReservation(reserv models.Reservation) (models.Reservation, error)
 }
 
@@ -45,6 +46,12 @@ func (r *repository) UpdateReservation(reserv models.Reservation) (models.Reserv
 	err := r.db.Save(&reserv).Error
 
 	return reserv, err
+}
+
+func (r *repository) UpdateStatusReserv(status models.Reservation) (models.Reservation, error) {
+	err := r.db.Save(&status).Error
+
+	return status, err
 }
 
 func (r *repository) DeleteReservation(reserv models.Reservation) (models.Reservation, error) {

@@ -183,6 +183,50 @@ func (h *handlerReservation) UpdateReservation(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
+func (h *handlerReservation) UpdateStatusReserv(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	request := new(reservationsdto.ReservationReqUpdate)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	reserv, err := h.ReservationRepository.GetReservation(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	// Gunakan time.Time.Nil untuk menandakan bahwa field tersebut tidak diubah
+	var orderProses, orderSelesai time.Time
+
+	// Mengecek apakah request.OrderProses dan request.OrderSelesai berisi nilai yang tidak nol
+	if !request.OrderProses.IsZero() {
+		orderProses = request.OrderProses
+	}
+
+	if !request.OrderSelesai.IsZero() {
+		orderSelesai = request.OrderSelesai
+	}
+
+	// Update nilai-nilai yang tidak nol
+	reserv.OrderProses = orderProses
+	reserv.OrderSelesai = orderSelesai
+
+	if request.Status != "" {
+		reserv.Status = request.Status
+	}
+
+	reserv.UpdatedAt = time.Now()
+
+	data, err := h.ReservationRepository.UpdateReservation(reserv)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
 func (h *handlerReservation) DeleteReservation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 
