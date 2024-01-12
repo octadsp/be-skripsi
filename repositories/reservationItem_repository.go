@@ -10,6 +10,7 @@ import (
 type ReservationItemRepository interface {
 	FindReservItems() ([]models.ReservationItem, error)
 	GetReservItem(ID int) (models.ReservationItem, error)
+	GetReservItemByReservId(reservId int) (models.ReservationItem, error)
 	AddReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 	UpdateReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 	// DeleteReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
@@ -33,6 +34,12 @@ func (r *repository) FindReservItems() ([]models.ReservationItem, error) {
 func (r *repository) GetReservItem(ID int) (models.ReservationItem, error) {
 	var reservItem models.ReservationItem
 	err := r.db.Preload("Reservation").Preload("DemageSubCategory").First(&reservItem, ID).Error // Using First method
+	return reservItem, err
+}
+
+func (r *repository) GetReservItemByReservId(reservId int) (models.ReservationItem, error) {
+	var reservItem models.ReservationItem
+	err := r.db.Preload("Reservation").Preload("DemageSubCategory").Where("reservation_id = ?", reservId).Find(&reservItem).Error // Using First method
 	return reservItem, err
 }
 

@@ -48,6 +48,19 @@ func (h *handlerReservationItem) GetReservItem(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: item})
 }
 
+func (h *handlerReservationItem) GetReservItemByReservId(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("reservId"))
+	// userLogin := c.Get("userLogin")
+	// userId := userLogin.(jwt.MapClaims)["id"].(float64)
+
+	item, err := h.ReservationItemRepository.GetReservItemByReservId(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: item})
+}
+
 func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
 	imageFile := c.Get("image").(string)
 	price, _ := strconv.Atoi(c.FormValue("price"))
