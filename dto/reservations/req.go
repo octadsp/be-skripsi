@@ -60,6 +60,9 @@ type ReservationReqUpdate struct {
 	DriverAge      string `json:"driver_age"`
 	DriverLicense  string `json:"driver_license"`
 
+	TotalItem  int `json:"total_item"`
+	TotalPrice int `json:"total_price"`
+
 	ReservationItemID uint32 `json:"reservation_item_id"`
 
 	UpdatedAt time.Time `json:"updated_at"`

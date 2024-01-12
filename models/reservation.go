@@ -33,6 +33,9 @@ type Reservation struct {
 	DriverAge      string `json:"driver_age" gorm:"type: varchar(5)"`
 	DriverLicense  string `json:"driver_license" gorm:"type: varchar(10)"`
 
+	TotalItem  int `json:"total_item"`
+	TotalPrice int `json:"total_price"`
+
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
