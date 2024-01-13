@@ -22,7 +22,7 @@ func RepositoryNotification(db *gorm.DB) *repository {
 
 func (r *repository) GetNotificationsByUserID(userID uint) ([]models.Notification, error) {
 	var notifications []models.Notification
-	err := r.db.Preload("User").Where("user_id = ? AND is_read = ?", userID, false).Find(&notifications).Error
+	err := r.db.Preload("User").Where("user_id = ? AND is_read = ?", userID, false).Order("created_at desc").Find(&notifications).Error
 	return notifications, err
 }
 
