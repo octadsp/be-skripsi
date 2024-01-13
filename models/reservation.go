@@ -7,6 +7,7 @@ type Reservation struct {
 	ID           uint32    `json:"id" gorm:"primary_key:auto_increment"`
 	KodeOrder    string    `json:"kode_order" gorm:"type: varchar(100)"`
 	Status       string    `json:"status" gorm:"type: varchar(10)"`
+	SubStatus    string    `json:"sub_status" gorm:"type: varchar(10)"`
 	OrderMasuk   time.Time `json:"order_masuk"`
 	OrderProses  time.Time `json:"order_proses"`
 	OrderSelesai time.Time `json:"order_selesai"`

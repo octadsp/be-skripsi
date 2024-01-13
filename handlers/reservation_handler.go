@@ -216,6 +216,9 @@ func (h *handlerReservation) UpdateStatusReserv(c echo.Context) error {
 	if request.Status != "" {
 		reserv.Status = request.Status
 	}
+	if request.SubStatus != "" {
+		reserv.SubStatus = request.SubStatus
+	}
 	if request.TotalItem != 0 {
 		reserv.TotalItem = request.TotalItem
 	}

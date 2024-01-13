@@ -6,6 +6,7 @@ type ReservationReq struct {
 	//Master
 	KodeOrder    string    `json:"kode_order"`
 	Status       string    `json:"status"`
+	SubStatus    string    `json:"sub_status"`
 	OrderMasuk   time.Time `json:"order_masuk"`
 	OrderProses  time.Time `json:"order_proses"`
 	OrderSelesai time.Time `json:"order_selesai"`
@@ -39,6 +40,7 @@ type ReservationReq struct {
 
 type ReservationReqUpdate struct {
 	Status       string    `json:"status"`
+	SubStatus    string    `json:"sub_status"`
 	OrderProses  time.Time `json:"order_proses"`
 	OrderSelesai time.Time `json:"order_selesai"`
 
