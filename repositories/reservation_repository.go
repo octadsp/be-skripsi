@@ -39,7 +39,7 @@ func (r *repository) GetReservation(ID int) (models.Reservation, error) {
 
 func (r *repository) GetReservSubStatus(substatus string) ([]models.Reservation, error) {
 	var reserv []models.Reservation
-	err := r.db.Preload("User").Where("sub_status = ?", substatus).Order("order_masuk desc").Find(&reserv).Error
+	err := r.db.Preload("User").Where("sub_status = ? AND status = ?", substatus, "Proses").Order("order_masuk desc").Find(&reserv).Error
 
 	return reserv, err
 }
