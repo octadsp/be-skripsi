@@ -10,6 +10,7 @@ import (
 type ReservationRepository interface {
 	FindReservations() ([]models.Reservation, error)
 	GetReservation(ID int) (models.Reservation, error)
+	GetReservSubStatus(substatus string) ([]models.Reservation, error)
 	AddReservation(reserv models.Reservation) (models.Reservation, error)
 	UpdateReservation(reserv models.Reservation) (models.Reservation, error)
 	UpdateStatusReserv(status models.Reservation) (models.Reservation, error)
@@ -32,6 +33,13 @@ func (r *repository) FindReservations() ([]models.Reservation, error) {
 func (r *repository) GetReservation(ID int) (models.Reservation, error) {
 	var reserv models.Reservation
 	err := r.db.Preload("User").First(&reserv, ID).Error // Using First method
+
+	return reserv, err
+}
+
+func (r *repository) GetReservSubStatus(substatus string) ([]models.Reservation, error) {
+	var reserv []models.Reservation
+	err := r.db.Preload("User").Where("sub_status = ?", substatus).Order("order_masuk desc").Find(&reserv).Error
 
 	return reserv, err
 }

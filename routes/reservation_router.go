@@ -18,4 +18,6 @@ func ReservationRoutes(e *echo.Group) {
 	e.PATCH("/reservation/:id", h.UpdateReservation)
 	e.DELETE("/reservation/:id", h.DeleteReservation)
 	e.PATCH("/reservation-status/:id", h.UpdateStatusReserv)
+
+	e.GET("/reservation-substatus/:substatus", h.GetReservSubStatus)
 }

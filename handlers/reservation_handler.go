@@ -30,6 +30,18 @@ func (h *handlerReservation) FindReservations(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: s})
 }
 
+func (h *handlerReservation) GetReservSubStatus(c echo.Context) error {
+	status := c.Param("substatus")
+
+	reserv, err := h.ReservationRepository.GetReservSubStatus(status)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reserv})
+}
+
 func (h *handlerReservation) GetReservation(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	// userLogin := c.Get("userLogin")
