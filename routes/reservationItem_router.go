@@ -20,6 +20,7 @@ func ReservationItemRoutes(e *echo.Group) {
 	e.PATCH("/reservation-item/:id", middleware.UploadImage(h.UpdateReservItem))
 	// e.DELETE("/reservation-Item/:id", h.DeleteReservItem)
 
+	e.GET("/reservation-item-byreserv/:id/:postStat", h.FindReservItemByReserv)
 	e.PATCH("/post-to-user/:id", h.PostToUser)
 	e.PATCH("/reservation-item-status/:id", h.UpdateStatus)
 }

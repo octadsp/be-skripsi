@@ -11,6 +11,7 @@ type ReservationItemRepository interface {
 	FindReservItems() ([]models.ReservationItem, error)
 	GetReservItem(ID int) (models.ReservationItem, error)
 	GetReservItemByReservId(reservId int) ([]models.ReservationItem, error)
+	FindReservItemByReserv(reservId int, postStat string) ([]models.ReservationItem, error)
 	AddReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 	UpdateReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 	// DeleteReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
@@ -41,6 +42,12 @@ func (r *repository) GetReservItem(ID int) (models.ReservationItem, error) {
 func (r *repository) GetReservItemByReservId(reservId int) ([]models.ReservationItem, error) {
 	var reservItem []models.ReservationItem
 	err := r.db.Preload("Reservation").Preload("DemageSubCategory").Where("reservation_id = ?", reservId).Find(&reservItem).Error
+	return reservItem, err
+}
+
+func (r *repository) FindReservItemByReserv(reservId int, postStat string) ([]models.ReservationItem, error) {
+	var reservItem []models.ReservationItem
+	err := r.db.Preload("Reservation").Preload("DemageSubCategory").Where("reservation_id = ? AND post_to_user = ?", reservId, postStat).Find(&reservItem).Error
 	return reservItem, err
 }
 
