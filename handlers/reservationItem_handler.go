@@ -246,7 +246,7 @@ func (h *handlerReservationItem) PostToUser(c echo.Context) error {
 
 	reserv.UpdatedAt = time.Now()
 
-	data, err := h.ReservationItemRepository.UpdateStatus(reserv)
+	data, err := h.ReservationItemRepository.PostToUser(reserv)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}
