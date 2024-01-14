@@ -44,9 +44,10 @@ func (h *handlerRating) AddRating(c echo.Context) error {
 	}
 
 	rating := models.Rating{
-		UserID:     request.UserID,
-		Rating:     request.Rating,
-		RatingName: request.RatingName,
+		UserID:        request.UserID,
+		ReservationID: request.ReservationID,
+		Rating:        request.Rating,
+		RatingName:    request.RatingName,
 	}
 
 	data, err := h.ratingRepository.AddRating(rating)
