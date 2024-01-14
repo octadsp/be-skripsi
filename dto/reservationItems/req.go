@@ -6,6 +6,7 @@ type ReservationItemReq struct {
 	Image               string `json:"image" form:"image"`
 	Price               int64  `json:"price" form:"price"`
 	Status              bool   `json:"status" form:"status"`
+	PostToUser          string `json:"post_to_user"`
 }
 
 type ReservationItemReqUpdate struct {
@@ -14,4 +15,5 @@ type ReservationItemReqUpdate struct {
 	Image               string `json:"image" form:"image"`
 	Price               int64  `json:"price" form:"price"`
 	Status              bool   `json:"status" form:"status"`
+	PostToUser          string `json:"post_to_user"`
 }

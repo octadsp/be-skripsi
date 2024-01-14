@@ -15,6 +15,7 @@ type ReservationItemRepository interface {
 	UpdateReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 	// DeleteReservItem(reservItem models.ReservationItem) (models.ReservationItem, error)
 
+	PostToUser(reservItem models.ReservationItem) (models.ReservationItem, error)
 	UpdateStatus(status models.ReservationItem) (models.ReservationItem, error)
 }
 
@@ -45,6 +46,12 @@ func (r *repository) GetReservItemByReservId(reservId int) ([]models.Reservation
 
 func (r *repository) AddReservItem(reservItem models.ReservationItem) (models.ReservationItem, error) {
 	err := r.db.Create(&reservItem).Error
+
+	return reservItem, err
+}
+
+func (r *repository) PostToUser(reservItem models.ReservationItem) (models.ReservationItem, error) {
+	err := r.db.Save(&reservItem).Error
 
 	return reservItem, err
 }

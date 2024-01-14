@@ -11,6 +11,7 @@ type ReservationItem struct {
 	DemageSubCategory   DemageSubCategory `json:"demage_sub_category" gorm:"foreignKey: DemageSubCategoryID"`
 	Price               int64             `json:"price"`
 	Status              bool              `json:"status"`
+	PostToUser          string            `json:"post_to_user"`
 	CreatedAt           time.Time         `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt           time.Time         `json:"updated_at" gorm:"autoCreateTime"`
 }

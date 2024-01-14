@@ -212,6 +212,34 @@ func (h *handlerReservationItem) UpdateStatus(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
+func (h *handlerReservationItem) PostToUser(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	request := new(reservItemdto.ReservationItemReqUpdate)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	reserv, err := h.ReservationItemRepository.GetReservItem(id)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	if request.PostToUser != "" {
+		reserv.PostToUser = request.PostToUser
+	}
+
+	reserv.UpdatedAt = time.Now()
+
+	data, err := h.ReservationItemRepository.UpdateStatus(reserv)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
 func respAddReservItem(u models.ReservationItem) reservItemdto.ReservationItemResp {
 	return reservItemdto.ReservationItemResp{
 		ID:                  u.ID,
