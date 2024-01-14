@@ -20,7 +20,7 @@ func RepositoryRating(db *gorm.DB) *repository {
 // queries the "carbrands" table in the database and scans the results into a slice of CarBrands models.
 func (r *repository) FindRatingByUser(userID int) ([]models.Rating, error) {
 	var ratings []models.Rating
-	err := r.db.Preload("Reservation").Preload("User").Where("user_id = ?", userID).Find(&ratings).Error // Using Find method
+	err := r.db.Preload("Reservation").Preload("User").Where("reservation_id = ?", userID).Find(&ratings).Error // Using Find method
 
 	return ratings, err
 }
