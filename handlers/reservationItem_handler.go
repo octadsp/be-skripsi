@@ -75,6 +75,7 @@ func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
 		Image:               imageFile,
 		Price:               int64(price),
 		Status:              status,
+		PostToUser:          c.FormValue("post_to_user"),
 	}
 
 	validation := validator.New()
@@ -104,6 +105,7 @@ func (h *handlerReservationItem) AddReservItem(c echo.Context) error {
 		Image:               resp.SecureURL,
 		Price:               request.Price,
 		Status:              request.Status,
+		PostToUser:          request.PostToUser,
 	}
 
 	data, err := h.ReservationItemRepository.AddReservItem(reserv)
