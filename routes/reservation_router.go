@@ -20,4 +20,5 @@ func ReservationRoutes(e *echo.Group) {
 	e.PATCH("/reservation-status/:id", h.UpdateStatusReserv)
 
 	e.GET("/reservation-substatus/:substatus", h.GetReservSubStatus)
+	e.GET("/reservation-count", h.GetReservationCountByDate)
 }

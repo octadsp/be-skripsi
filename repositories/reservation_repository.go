@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"be-skripsi/models"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -15,6 +16,8 @@ type ReservationRepository interface {
 	UpdateReservation(reserv models.Reservation) (models.Reservation, error)
 	UpdateStatusReserv(status models.Reservation) (models.Reservation, error)
 	DeleteReservation(reserv models.Reservation) (models.Reservation, error)
+
+	GetReservationCountByDate(date time.Time) (int64, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -35,6 +38,16 @@ func (r *repository) GetReservation(ID int) (models.Reservation, error) {
 	err := r.db.Preload("User").First(&reserv, ID).Error // Using First method
 
 	return reserv, err
+}
+
+func (r *repository) GetReservationCountByDate(date time.Time) (int64, error) {
+	var count int64
+	result := r.db.Table("reservations").Where("DATE(order_masuk) = DATE(?)", date).Count(&count)
+	if result.Error != nil {
+		return 0, result.Error
+	}
+
+	return count, nil
 }
 
 func (r *repository) GetReservSubStatus(substatus string) ([]models.Reservation, error) {

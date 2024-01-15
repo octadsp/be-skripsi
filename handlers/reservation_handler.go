@@ -55,6 +55,21 @@ func (h *handlerReservation) GetReservation(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reserv})
 }
 
+func (h *handlerReservation) GetReservationCountByDate(c echo.Context) error {
+	dateParam := c.QueryParam("date")
+	date, err := time.Parse("2006-01-02", dateParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	count, err := h.ReservationRepository.GetReservationCountByDate(date)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, map[string]int64{"count": count})
+}
+
 func (h *handlerReservation) AddReservation(c echo.Context) error {
 	request := new(reservationsdto.ReservationReq)
 	if err := c.Bind(request); err != nil {
