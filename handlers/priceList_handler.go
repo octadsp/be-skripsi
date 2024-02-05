@@ -38,7 +38,7 @@ func (h *handlerPriceList) FindPriceLists(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: price})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: respAllPrice(price)})
 }
 
 func (h *handlerPriceList) FindAllPriceLists(c echo.Context) error {
@@ -47,7 +47,7 @@ func (h *handlerPriceList) FindAllPriceLists(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: price})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: respAllPrice(price)})
 }
 
 func (h *handlerPriceList) GetPriceList(c echo.Context) error {
@@ -163,4 +163,22 @@ func respAddprice(u models.PriceList) priceListsdto.PriceListResp {
 		Price:               u.Price,
 		Status:              u.Status,
 	}
+}
+
+func respAllPrice(u []models.PriceList) []priceListsdto.PriceListResp {
+	var response []priceListsdto.PriceListResp
+
+	for _, item := range u {
+		resp := priceListsdto.PriceListResp{
+			DemageSubCategoryID: item.DemageSubCategoryID,
+			CarClassID:          item.CarClassID,
+			CarClass:            models.CarClass(item.CarClass),
+			Price:               item.Price,
+			Status:              item.Status,
+		}
+
+		response = append(response, resp)
+	}
+
+	return response
 }
