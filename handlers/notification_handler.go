@@ -86,10 +86,9 @@ func (h *handlerNotification) UpdateNotificationStatus(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid notification ID"})
 	}
 
-	isReadParam := c.QueryParam("isRead")
-	isRead, err := strconv.ParseBool(isReadParam)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid isRead parameter"})
+	request := new(notificationsdto.NotifReqStatus)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	// Get the existing notification
@@ -99,10 +98,14 @@ func (h *handlerNotification) UpdateNotificationStatus(c echo.Context) error {
 	}
 
 	// Update read status
-	notification.IsRead = isRead
+	if request.IsRead {
+		notification.IsRead = request.IsRead
+	}
+
+	notification.UpdatedAt = time.Now()
 
 	// Update the notification status and get the updated notification
-	updatedNotification, err := h.NotificationRepository.UpdateNotificationStatus(uint(notifID), notification.IsRead)
+	updatedNotification, err := h.NotificationRepository.UpdateNotificationStatus(notification)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}

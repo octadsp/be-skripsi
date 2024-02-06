@@ -12,7 +12,7 @@ type NotificationRepository interface {
 	GetNotificationsByUserID(userID uint) ([]models.Notification, error)
 	GetNotif(ID int) (models.Notification, error)
 	CreateNotification(notif models.Notification) (models.Notification, error)
-	UpdateNotificationStatus(notifID uint, isRead bool) (models.Notification, error)
+	UpdateNotificationStatus(isRead models.Notification) (models.Notification, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -38,8 +38,8 @@ func (r *repository) CreateNotification(notif models.Notification) (models.Notif
 	return notif, err
 }
 
-func (r *repository) UpdateNotificationStatus(notifID uint, isRead bool) (models.Notification, error) {
-	var notification models.Notification
-	err := r.db.Model(&models.Notification{}).Where("id = ?", notifID).Update("is_read", isRead).First(&notification).Error
-	return notification, err
+func (r *repository) UpdateNotificationStatus(isRead models.Notification) (models.Notification, error) {
+	err := r.db.Save(&isRead).Error
+
+	return isRead, err
 }

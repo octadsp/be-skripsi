@@ -6,3 +6,7 @@ type NotifReq struct {
 	Title    string `json:"title"`
 	Message  string `json:"message"`
 }
+
+type NotifReqStatus struct {
+	IsRead bool `json:"is_read"`
+}
