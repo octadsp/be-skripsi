@@ -8,6 +8,7 @@ type PriceList struct {
 	DemageSubCategory   DemageSubCategory `json:"demage_sub_category" gorm:"foreignKey:DemageSubCategoryID"`
 	CarClassID          uint32            `json:"car_class_id"`
 	CarClass            CarClass          `json:"car_class" gorm:"foreignKey:CarClassID"`
+	CarBrandID          uint32            `json:"car_brand_id" gorm:"foreignKey:CarBrandID"`
 	Price               int64             `json:"price"`
 	Status              string            `json:"status" gorm:"type: varchar(10)"`
 	CreatedAt           time.Time         `json:"created_at" gorm:"autoCreateTime"`

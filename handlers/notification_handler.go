@@ -81,7 +81,7 @@ func (h *handlerNotification) CreateNotification(c echo.Context) error {
 }
 
 func (h *handlerNotification) UpdateNotificationStatus(c echo.Context) error {
-	notifID, err := strconv.Atoi(c.Param("id"))
+	notifID, err := strconv.Atoi(c.Param("notifID"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid notification ID"})
 	}

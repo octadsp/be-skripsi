@@ -24,7 +24,7 @@ func RepositoryPriceList(db *gorm.DB) *repository {
 // queries the "pricelists" table in the database and scans the results into a slice of PriceLists models.
 func (r *repository) FindPriceLists(offset, limit int) ([]models.PriceList, error) {
 	var prices []models.PriceList
-	err := r.db.Offset(offset).Preload("CarClass").Preload("DemageSubCategory").Limit(limit).Order("id").Find(&prices).Error // Using Find method
+	err := r.db.Offset(offset).Preload("CarClass").Preload("CarBrand").Preload("DemageSubCategory").Limit(limit).Order("id").Find(&prices).Error // Using Find method
 
 	return prices, err
 }
