@@ -10,6 +10,8 @@ import (
 // declaration of the ReservationInsuranceRepository interface, which defines methods
 type ReservationRepository interface {
 	FindReservations() ([]models.Reservation, error)
+	FindReservationsDone() ([]models.Reservation, error)
+	FindReservationsStatus(status string) ([]models.Reservation, error)
 	GetReservation(ID int) (models.Reservation, error)
 	GetReservSubStatus(substatus string) ([]models.Reservation, error)
 	AddReservation(reserv models.Reservation) (models.Reservation, error)
@@ -29,6 +31,20 @@ func RepositoryReservation(db *gorm.DB) *repository {
 func (r *repository) FindReservations() ([]models.Reservation, error) {
 	var reserv []models.Reservation
 	err := r.db.Preload("User").Where("status <> ?", "Rejected").Order("order_masuk desc").Find(&reserv).Error // Using Find method
+
+	return reserv, err
+}
+
+func (r *repository) FindReservationsDone() ([]models.Reservation, error) {
+	var reserv []models.Reservation
+	err := r.db.Preload("User").Where("status ?", "Selesai").Order("order_masuk desc").Find(&reserv).Error // Using Find method
+
+	return reserv, err
+}
+
+func (r *repository) FindReservationsStatus(status string) ([]models.Reservation, error) {
+	var reserv []models.Reservation
+	err := r.db.Preload("User").Where("status = ?", status).Order("order_masuk desc").Find(&reserv).Error // Using Find method
 
 	return reserv, err
 }

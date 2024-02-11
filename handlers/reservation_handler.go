@@ -30,6 +30,29 @@ func (h *handlerReservation) FindReservations(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: s})
 }
 
+func (h *handlerReservation) FindReservationsDone(c echo.Context) error {
+	s, err := h.ReservationRepository.FindReservationsDone()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: s})
+}
+
+func (h *handlerReservation) FindReservationsStatus(c echo.Context) error {
+	status := c.QueryParam("status") // Ambil nilai dari query parameter "status"
+	if status == "" {                // Periksa jika status kosong
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Missing status parameter"})
+	}
+
+	reservations, err := h.ReservationRepository.FindReservationsStatus(status)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reservations})
+}
+
 func (h *handlerReservation) GetReservSubStatus(c echo.Context) error {
 	status := c.Param("substatus")
 

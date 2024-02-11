@@ -13,6 +13,8 @@ func ReservationRoutes(e *echo.Group) {
 	h := handlers.HandlerReservation(reservationRepository)
 
 	e.GET("/reservations", h.FindReservations)
+	e.GET("/reservationstatus", h.FindReservationsStatus)
+	e.GET("/reservations/done", h.FindReservationsDone)
 	e.GET("/reservation/:id", h.GetReservation)
 	e.POST("/reservation", h.AddReservation)
 	e.PATCH("/reservation/:id", h.UpdateReservation)
