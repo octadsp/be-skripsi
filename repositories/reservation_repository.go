@@ -18,6 +18,7 @@ type ReservationRepository interface {
 	UpdateReservation(reserv models.Reservation) (models.Reservation, error)
 	UpdateStatusReserv(status models.Reservation) (models.Reservation, error)
 	DeleteReservation(reserv models.Reservation) (models.Reservation, error)
+	FindReservationsStatusFromAndUntil(status string, from time.Time, until time.Time) ([]models.Reservation, error)
 
 	GetReservationCountByDate(date time.Time) (int64, error)
 }
@@ -53,6 +54,17 @@ func (r *repository) FindReservationsStatus(status string, date time.Time) ([]mo
 	var reserv []models.Reservation
 	err := r.db.Preload("User").
 		Where("status = ? AND DATE(order_masuk) = ?", status, date.Format("2006-01-02")).
+		Order("order_masuk asc").
+		Find(&reserv).
+		Error
+
+	return reserv, err
+}
+
+func (r *repository) FindReservationsStatusFromAndUntil(status string, from time.Time, until time.Time) ([]models.Reservation, error) {
+	var reserv []models.Reservation
+	err := r.db.Preload("User").
+		Where("status = ? AND DATE(order_masuk) BETWEEN ? AND ?", status, from.Format("2006-01-02"), until.Format("2006-01-02")).
 		Order("order_masuk asc").
 		Find(&reserv).
 		Error
