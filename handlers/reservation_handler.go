@@ -39,13 +39,46 @@ func (h *handlerReservation) FindReservationsDone(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: s})
 }
 
+// func (h *handlerReservation) FindReservationsStatus(c echo.Context) error {
+// 	status := c.QueryParam("status") // Ambil nilai dari query parameter "status"
+// 	if status == "" {                // Periksa jika status kosong
+// 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Missing status parameter"})
+// 	}
+
+// 	reservations, err := h.ReservationRepository.FindReservationsStatus(status)
+// 	if err != nil {
+// 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+// 	}
+
+//		return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reservations})
+//	}
 func (h *handlerReservation) FindReservationsStatus(c echo.Context) error {
-	status := c.QueryParam("status") // Ambil nilai dari query parameter "status"
-	if status == "" {                // Periksa jika status kosong
+	// Ambil nilai dari query parameter "status"
+	status := c.QueryParam("status")
+	if status == "" {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Missing status parameter"})
 	}
 
-	reservations, err := h.ReservationRepository.FindReservationsStatus(status)
+	// Ambil nilai dari query parameter "date"
+	dateStr := c.QueryParam("date")
+	var date time.Time
+	var err error
+	// Periksa jika query parameter "date" tidak kosong
+	if dateStr != "" {
+		// Konversi string tanggal menjadi tipe time.Time
+		date, err = time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid date format"})
+		}
+	}
+
+	// Panggil metode repository untuk mencari reservasi berdasarkan status dan tanggal
+	var reservations []models.Reservation
+	if date.IsZero() {
+		reservations, err = h.ReservationRepository.FindReservationsStatus(status, date)
+	} else {
+		reservations, err = h.ReservationRepository.FindReservationsStatus(status, date)
+	}
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}
