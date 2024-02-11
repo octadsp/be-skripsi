@@ -44,7 +44,7 @@ func (r *repository) FindReservationsDone() ([]models.Reservation, error) {
 
 func (r *repository) FindReservationsStatus(status string) ([]models.Reservation, error) {
 	var reserv []models.Reservation
-	err := r.db.Preload("User").Where("status = ?", status).Order("order_masuk desc").Find(&reserv).Error // Using Find method
+	err := r.db.Preload("User").Where("status = ?", status).Order("order_masuk asc").Find(&reserv).Error // Using Find method
 
 	return reserv, err
 }
