@@ -24,7 +24,7 @@ func RepositoryCarBrand(db *gorm.DB) *repository {
 // queries the "carbrands" table in the database and scans the results into a slice of CarBrands models.
 func (r *repository) FindCarBrands(offset, limit int) ([]models.CarBrand, error) {
 	var brands []models.CarBrand
-	err := r.db.Offset(offset).Limit(limit).Order("id").Find(&brands).Error // Using Find method
+	err := r.db.Offset(offset).Limit(limit).Order("name").Find(&brands).Error // Using Find method
 
 	return brands, err
 }
