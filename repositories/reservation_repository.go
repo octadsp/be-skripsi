@@ -19,6 +19,7 @@ type ReservationRepository interface {
 	UpdateStatusReserv(status models.Reservation) (models.Reservation, error)
 	DeleteReservation(reserv models.Reservation) (models.Reservation, error)
 	FindReservationsStatusFromAndUntil(status string, from time.Time, until time.Time) ([]models.Reservation, error)
+	FindReservationsStatusFromAndUntilChart(status string, from time.Time, until time.Time) ([]models.Reservation, error)
 
 	GetReservationCountByDate(date time.Time) (int64, error)
 }
@@ -65,6 +66,21 @@ func (r *repository) FindReservationsStatusFromAndUntil(status string, from time
 	var reserv []models.Reservation
 	err := r.db.Preload("User").
 		Where("status = ? AND DATE(order_masuk) BETWEEN ? AND ?", status, from.Format("2006-01-02"), until.Format("2006-01-02")).
+		Order("order_masuk asc").
+		Find(&reserv).
+		Error
+
+	return reserv, err
+}
+
+func (r *repository) FindReservationsStatusFromAndUntilChart(status string, from time.Time, until time.Time) ([]models.Reservation, error) {
+	var reserv []models.Reservation
+	err := r.db.
+		Model(&models.Reservation{}).
+		Preload("User").
+		Select("EXTRACT(MONTH FROM order_masuk) AS MonthInt, TO_CHAR(order_masuk, 'Month') AS Month, SUM(total_item) AS total_item, SUM(total_price) AS total_price").
+		Where("status = ? AND order_masuk BETWEEN ? AND ?", status, from, until).
+		Group("MonthInt, Month").
 		Order("order_masuk asc").
 		Find(&reserv).
 		Error

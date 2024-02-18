@@ -115,6 +115,35 @@ func (h *handlerReservation) FindReservationsStatusFromAndUntil(c echo.Context) 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reservations})
 }
 
+func (h *handlerReservation) FindReservationsStatusFromAndUntilChart(c echo.Context) error {
+	// Ambil nilai status dari query parameter "status"
+	status := c.QueryParam("status")
+
+	// Ambil nilai from dan until dari query parameter "from" dan "until"
+	fromStr := c.QueryParam("from")
+	untilStr := c.QueryParam("until")
+
+	// Parsing nilai "from" dan "until" ke dalam tipe data time.Time
+	from, err := time.Parse("2006-01-02", fromStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid 'from' parameter format"})
+	}
+
+	until, err := time.Parse("2006-01-02", untilStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid 'until' parameter format"})
+	}
+
+	// Panggil fungsi repository untuk mencari reservasi berdasarkan status, dari, dan sampai
+	reservations, err := h.ReservationRepository.FindReservationsStatusFromAndUntilChart(status, from, until)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+	}
+
+	// Kirim hasil pencarian sebagai JSON response
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reservations})
+}
+
 func (h *handlerReservation) GetReservSubStatus(c echo.Context) error {
 	status := c.Param("substatus")
 

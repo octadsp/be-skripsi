@@ -15,6 +15,7 @@ func ReservationRoutes(e *echo.Group) {
 	e.GET("/reservations", h.FindReservations)
 	e.GET("/reservationstatus", h.FindReservationsStatus)
 	e.GET("/reservationstatusfromuntil", h.FindReservationsStatusFromAndUntil)
+	e.GET("/reservationcharts", h.FindReservationsStatusFromAndUntilChart)
 	e.GET("/reservations/done", h.FindReservationsDone)
 	e.GET("/reservation/:id", h.GetReservation)
 	e.POST("/reservation", h.AddReservation)
