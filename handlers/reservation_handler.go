@@ -141,7 +141,7 @@ func (h *handlerReservation) FindReservationsStatusFromAndUntilChart(c echo.Cont
 	}
 
 	// Kirim hasil pencarian sebagai JSON response
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: respReservationChart(reservations)})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reservations})
 }
 
 func (h *handlerReservation) GetReservSubStatus(c echo.Context) error {
