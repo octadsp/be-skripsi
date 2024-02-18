@@ -80,7 +80,7 @@ func (r *repository) FindReservationsStatusFromAndUntilChart(status string, from
 		Preload("User").
 		Select("EXTRACT(MONTH FROM order_masuk) AS monthint, TO_CHAR(order_masuk, 'Month') AS month, SUM(total_item) AS total_item, order_masuk, SUM(total_price) AS total_price").
 		Where("status = ? AND order_masuk BETWEEN ? AND ?", status, from, until).
-		Group("MonthInt, Month").
+		Group("MonthInt, Month, order_masuk").
 		Order("MonthInt asc").
 		Find(&reserv).
 		Error
