@@ -26,14 +26,14 @@ func RepositoryCarClass(db *gorm.DB) *repository {
 // queries the "carclass" table in the database and scans the results into a slice of CarClass models.
 func (r *repository) FindCarClass(offset, limit int) ([]models.CarClass, error) {
 	var class []models.CarClass
-	err := r.db.Offset(offset).Limit(limit).Order("id").Preload("CarBrand").Preload("CarType").Find(&class).Error // Using Find method
+	err := r.db.Offset(offset).Limit(limit).Order("golongan").Preload("CarBrand").Preload("CarType").Find(&class).Error // Using Find method
 
 	return class, err
 }
 
 func (r *repository) FindAllCarClass() ([]models.CarClass, error) {
 	var class []models.CarClass
-	err := r.db.Order("id").Preload("CarBrand").Preload("CarType").Find(&class).Error // Using Find method
+	err := r.db.Order("golongan").Preload("CarBrand").Preload("CarType").Find(&class).Error // Using Find method
 
 	return class, err
 }
@@ -48,7 +48,7 @@ func (r *repository) GetCarClass(ID int) (models.CarClass, error) {
 func (r *repository) GetCarClasbyBrand(brandID int) ([]models.CarClass, error) {
 	var class []models.CarClass
 	err := r.db.Preload("CarBrand").Preload("CarType").Find(&class, "car_brand_id=?", brandID).Error
-	
+
 	return class, err
 }
 
