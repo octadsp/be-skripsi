@@ -139,7 +139,6 @@ func (h *handlerReservation) FindReservationsStatusFromAndUntilChart(c echo.Cont
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}
-
 	// Kirim hasil pencarian sebagai JSON response
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: respReservationChart(reservations)})
 }
@@ -394,21 +393,45 @@ func (h *handlerReservation) DeleteReservation(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
 }
 
-func respReservationChart(reservations []models.Reservation) []reservationsdto.ReservationChart {
-	var charts []reservationsdto.ReservationChart
+// func respReservationChart(reservations []models.Reservation) []reservationsdto.ReservationChart {
+// 	var charts []reservationsdto.ReservationChart
 
+// 	for _, u := range reservations {
+// 		month := time.Month(u.OrderMasuk.Month()).String()
+
+// 		chart := reservationsdto.ReservationChart{
+// 			MonthInt:   int(u.OrderMasuk.Month()),
+// 			Month:      month,
+// 			TotalItem:  u.TotalItem,
+// 			TotalPrice: u.TotalPrice,
+// 		}
+
+// 		charts = append(charts, chart)
+// 	}
+
+// 	return charts
+// }
+
+func respReservationChart(reservations []models.Reservation) map[int][]reservationsdto.ReservationChart {
+	// Buat map untuk menyimpan data berdasarkan monthint
+	chartMap := make(map[int][]reservationsdto.ReservationChart)
+
+	// Iterasi melalui setiap reservasi
 	for _, u := range reservations {
-		month := time.Month(u.OrderMasuk.Month()).String()
+		// Ambil monthint dari reservasi
+		monthInt := int(u.OrderMasuk.Month())
 
+		// Buat struktur data ReservationChart
 		chart := reservationsdto.ReservationChart{
-			MonthInt:   int(u.OrderMasuk.Month()),
-			Month:      month,
+			MonthInt:   monthInt,
+			Month:      time.Month(monthInt).String(),
 			TotalItem:  u.TotalItem,
 			TotalPrice: u.TotalPrice,
 		}
 
-		charts = append(charts, chart)
+		// Tambahkan ReservationChart ke slice yang sesuai dengan monthint
+		chartMap[monthInt] = append(chartMap[monthInt], chart)
 	}
 
-	return charts
+	return chartMap
 }
