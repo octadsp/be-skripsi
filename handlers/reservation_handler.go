@@ -412,9 +412,32 @@ func (h *handlerReservation) DeleteReservation(c echo.Context) error {
 // 	return charts
 // }
 
-func respReservationChart(reservations []models.Reservation) map[int][]reservationsdto.ReservationChart {
-	// Buat map untuk menyimpan data berdasarkan monthint
-	chartMap := make(map[int][]reservationsdto.ReservationChart)
+// func respReservationChart(reservations []models.Reservation) map[int][]reservationsdto.ReservationChart {
+// 	// Buat map untuk menyimpan data berdasarkan monthint
+// 	chartMap := make(map[int][]reservationsdto.ReservationChart)
+
+// 	// Iterasi melalui setiap reservasi
+// 	for _, u := range reservations {
+// 		// Ambil monthint dari reservasi
+// 		monthInt := int(u.OrderMasuk.Month())
+
+// 		// Buat struktur data ReservationChart
+// 		chart := reservationsdto.ReservationChart{
+// 			MonthInt:   monthInt,
+// 			Month:      time.Month(monthInt).String(),
+// 			TotalItem:  u.TotalItem,
+// 			TotalPrice: u.TotalPrice,
+// 		}
+
+// 		// Tambahkan ReservationChart ke slice yang sesuai dengan monthint
+// 		chartMap[monthInt] = append(chartMap[monthInt], chart)
+// 	}
+
+// 	return chartMap
+// }
+
+func respReservationChart(reservations []models.Reservation) []reservationsdto.ReservationChart {
+	var charts []reservationsdto.ReservationChart
 
 	// Iterasi melalui setiap reservasi
 	for _, u := range reservations {
@@ -429,9 +452,9 @@ func respReservationChart(reservations []models.Reservation) map[int][]reservati
 			TotalPrice: u.TotalPrice,
 		}
 
-		// Tambahkan ReservationChart ke slice yang sesuai dengan monthint
-		chartMap[monthInt] = append(chartMap[monthInt], chart)
+		// Tambahkan ReservationChart ke slice
+		charts = append(charts, chart)
 	}
 
-	return chartMap
+	return charts
 }
