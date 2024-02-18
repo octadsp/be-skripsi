@@ -141,7 +141,7 @@ func (h *handlerReservation) FindReservationsStatusFromAndUntilChart(c echo.Cont
 	}
 
 	// Kirim hasil pencarian sebagai JSON response
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: reservations})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: respReservationChart(reservations)})
 }
 
 func (h *handlerReservation) GetReservSubStatus(c echo.Context) error {
@@ -392,4 +392,23 @@ func (h *handlerReservation) DeleteReservation(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: data})
+}
+
+func respReservationChart(reservations []models.Reservation) []reservationsdto.ReservationChart {
+	var charts []reservationsdto.ReservationChart
+
+	for _, u := range reservations {
+		month := time.Month(u.OrderMasuk.Month()).String()
+
+		chart := reservationsdto.ReservationChart{
+			MonthInt:   int(u.OrderMasuk.Month()),
+			Month:      month,
+			TotalItem:  u.TotalItem,
+			TotalPrice: u.TotalPrice,
+		}
+
+		charts = append(charts, chart)
+	}
+
+	return charts
 }

@@ -40,3 +40,10 @@ type ReservationResp struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type ReservationChart struct {
+	MonthInt   int    `json:"monthint"`
+	Month      string `json:"month"`
+	TotalItem  int    `json:"total_item"`
+	TotalPrice int    `json:"total_price"`
+}

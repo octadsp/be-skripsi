@@ -1,6 +1,7 @@
 module be-skripsi
 
 go 1.21.4
+
 // go 1.20
 
 require (
@@ -26,6 +27,7 @@ require (
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/thedevsaddam/govalidator v1.9.10 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	golang.org/x/crypto v0.16.0 // indirect

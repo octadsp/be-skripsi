@@ -78,7 +78,7 @@ func (r *repository) FindReservationsStatusFromAndUntilChart(status string, from
 	err := r.db.
 		Model(&models.Reservation{}).
 		Preload("User").
-		Select("EXTRACT(MONTH FROM order_masuk) AS MonthInt, TO_CHAR(order_masuk, 'Month') AS Month, SUM(total_item) AS total_item, SUM(total_price) AS total_price").
+		Select("EXTRACT(MONTH FROM order_masuk) AS monthint, TO_CHAR(order_masuk, 'Month') AS month, SUM(total_item) AS total_item, SUM(total_price) AS total_price").
 		Where("status = ? AND order_masuk BETWEEN ? AND ?", status, from, until).
 		Group("MonthInt, Month").
 		Order("MonthInt asc").
