@@ -31,7 +31,7 @@ func (r *repository) FindCarTypes(offset, limit int) ([]models.CarType, error) {
 
 func (r *repository) FindAllCarTypes() ([]models.CarType, error) {
 	var types []models.CarType
-	err := r.db.Order("id").Find(&types).Error // Using Find method
+	err := r.db.Order("name").Find(&types).Error // Using Find method
 
 	return types, err
 }
