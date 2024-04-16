@@ -10,6 +10,8 @@ type MasterProvince struct {
 	Modified     time.Time `json:"modified" gorm:"autoCreateTime"`
 }
 
+// is_active = 1/0
+
 func (MasterProvince) TableName() string {
 	return "master_province"
 }

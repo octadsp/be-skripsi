@@ -7,7 +7,7 @@ type ProductImage struct {
 	ProductID string    `json:"product_id" gorm:"type: varchar(140); unique "`
 	Product   Product   `json:"product" gorm:"foreignKey:ProductID"`
 	ImageURL  string    `json:"image_url" gorm:"type: varchar(140); unique "`
-	IDX       int64     `json:"idx"`
+	Idx       int64     `json:"idx"`
 	Creation  time.Time `json:"creation" gorm:"autoCreateTime"`
 	Modified  time.Time `json:"modified" gorm:"autoCreateTime"`
 }

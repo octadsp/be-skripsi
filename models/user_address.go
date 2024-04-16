@@ -18,6 +18,8 @@ type UserAddress struct {
 	Modified       time.Time      `json:"modified" gorm:"autoCreateTime"`
 }
 
+// default_address = 1/0
+
 func (UserAddress) TableName() string {
 	return "user_address"
 }

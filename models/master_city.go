@@ -12,6 +12,8 @@ type MasterCity struct {
 	Modified   time.Time      `json:"modified" gorm:"autoCreateTime"`
 }
 
+// is_active = 1/0
+
 func (MasterCity) TableName() string {
 	return "master_city"
 }

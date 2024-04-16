@@ -11,6 +11,8 @@ type User struct {
 	Modified time.Time `json:"modified" gorm:"autoCreateTime"`
 }
 
+// role = ADMIN/CUSTOMER
+
 func (User) TableName() string {
 	return "user"
 }

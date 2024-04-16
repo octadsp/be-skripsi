@@ -20,6 +20,12 @@ func RunMigration() {
 		&models.ProductStockHistory{},
 		&models.Category{},
 		&models.Brand{},
+		&models.Order{},
+		&models.OrderItem{},
+		&models.CartItem{},
+		&models.OrderPayment{},
+		&models.DeliveryFare{},
+		&models.FreeDeliverySetting{},
 	)
 
 	if err != nil {
