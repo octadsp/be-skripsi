@@ -15,6 +15,11 @@ func RunMigration() {
 		&models.MasterCity{},
 		&models.MasterDistrict{},
 		&models.Message{},
+		&models.Product{},
+		&models.ProductImage{},
+		&models.ProductStockHistory{},
+		&models.Category{},
+		&models.Brand{},
 	)
 
 	if err != nil {
