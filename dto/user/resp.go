@@ -1,15 +1,22 @@
 package usersdto
 
-type UserResponse struct {
-	ID        uint32 `json:"id"`
-	FullName  string `json:"fullname"`
-	LastName  string `json:"lastname"`
-	Institute string `json:"institute"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Phone     string `json:"phone"`
-	Address   string `json:"address"`
-	Avatar    string `json:"image"`
-	Status    string `json:"status"`
-	Roles     string `json:"roles"`
-}
+// type UserDefaultResponse struct {
+// 	ID       string `json:"id"`
+// 	FullName string `json:"full_name"`
+// 	Email    string `json:"email"`
+// 	Phone    string `json:"phone_number"`
+// }
+
+// type UserLoginResponse struct {
+// 	ID       string `json:"id"`
+// 	FullName string `json:"full_name"`
+// 	Email    string `json:"email"`
+// 	Phone    string `json:"phone_number"`
+// }
+
+// type UserIdentityResponse struct {
+// 	ID       string `json:"id"`
+// 	FullName string `json:"full_name"`
+// 	Email    string `json:"email"`
+// 	Phone    string `json:"phone_number"`
+// }

@@ -1,30 +1,20 @@
 package authdto
 
 type RegisterResponse struct {
-	ID        uint32 `json:"id"`
-	FullName  string `json:"fullname"`
-	LastName  string `json:"lastname"`
-	Email     string `json:"email"`
-	Institute string `json:"institute"`
-	Phone     string `json:"phone"`
-	Address   string `json:"address"`
-	Avatar    string `json:"image"`
-	Status    string `json:"status"`
-	Roles     string `json:"roles"`
-	Token     string `json:"token"`
+	ID          string `json:"id"`
+	FullName    string `json:"full_name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
+	Role        string `json:"role"`
+	Token       string `json:"token"`
 }
 
 type LoginResponse struct {
-	ID        uint32 `json:"id"`
-	FullName  string `json:"fullname"`
-	LastName  string `json:"lastname"`
-	Email     string `json:"email"`
-	Institute string `json:"institute"`
-	Phone     string `json:"phone"`
-	Address   string `json:"address"`
-	Avatar    string `json:"image"`
-	Status    string `json:"status"`
-	Roles     string `json:"roles"`
-	Token     string `json:"token"`
-	ExpiresIn int64  `json:"expiresIn"`
+	ID          string `json:"id"`
+	FullName    string `json:"full_name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
+	Role        string `json:"role"`
+	Token       string `json:"token"`
+	ExpiresIn   int64  `json:"expiresIn"`
 }

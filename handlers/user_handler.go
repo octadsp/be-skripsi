@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	// authDto "be-skripsi/dto/auth"
 	dto "be-skripsi/dto/results"
-	// usersdto "be-skripsi/dto/user"
-	// "be-skripsi/models"
+
+	// bcrypt "be-skripsi/pkg/bcrypt"
 	"be-skripsi/repositories"
 
 	// "fmt"
@@ -15,16 +16,18 @@ import (
 
 	// "github.com/cloudinary/cloudinary-go/v2"
 	// "github.com/cloudinary/cloudinary-go/v2/api/uploader"
-	// "github.com/go-playground/validator/v10"
+
 	"github.com/labstack/echo/v4"
 )
 
 type handlerUser struct {
-	UserRepository repositories.UserRepository
+	UserRepository        repositories.UserRepository
+	UserDetailRepository  repositories.UserDetailRepository
+	UserAddressRepository repositories.UserAddressRepository
 }
 
-func HandlerUser(UserRepository repositories.UserRepository) *handlerUser {
-	return &handlerUser{UserRepository}
+func HandlerUser(UserRepository repositories.UserRepository, UserDetailRepository repositories.UserDetailRepository, UserAddressRepository repositories.UserAddressRepository) *handlerUser {
+	return &handlerUser{UserRepository, UserDetailRepository, UserAddressRepository}
 }
 
 func (h *handlerUser) FindUsers(c echo.Context) error {
@@ -165,14 +168,29 @@ func (h *handlerUser) DeleteUser(c echo.Context) error {
 
 }
 
-// func convertResponse(u models.User) usersdto.UserResponse {
-// 	return usersdto.UserResponse{
-// 		ID:        u.ID,
-// 		FullName:  u.FullName,
-// 		LastName:  u.LastName,
-// 		Institute: u.Institute,
-// 		Email:     u.Email,
-// 		Status:    u.Status,
-// 		Roles:     u.Roles,
+// func IdentityResponse(u models.User, ud models.UserDetail) userDto.UserIdentityResponse {
+// 	return userDto.UserIdentityResponse{
+// 		ID:       u.ID,
+// 		FullName: ud.FullName,
+// 		Email:    u.Email,
+// 		Phone:    ud.PhoneNumber,
+// 	}
+// }
+
+// func LoginResponse(u models.User, ud models.UserDetail) userDto.UserLoginResponse {
+// 	return userDto.UserLoginResponse{
+// 		ID:       ud.ID,
+// 		FullName: ud.FullName,
+// 		Email:    u.Email,
+// 		Phone:    ud.PhoneNumber,
+// 	}
+// }
+
+// func DefaultUserReponse(u models.User, ud models.UserDetail) userDto.UserDefaultResponse {
+// 	return userDto.UserDefaultResponse{
+// 		ID:       u.ID,
+// 		FullName: ud.FullName,
+// 		Email:    u.Email,
+// 		Phone:    ud.PhoneNumber,
 // 	}
 // }
