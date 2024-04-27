@@ -38,7 +38,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	validation := validator.New()
 	err := validation.Struct(request)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: validationError.GetValidationErrors(err)})
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: validationError.GetValidationErrors(err)})
 	}
 
 	/*
@@ -48,7 +48,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	// OK Hashing Password
 	password, err := bcrypt.HashPassword(request.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}
 
 	// OK Compose payload for User
@@ -63,7 +63,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	userData, err := h.UserRepository.CreateUser(*user)
 	if err != nil {
 		// Handle the error
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	/*
@@ -81,7 +81,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	userDetailData, err := h.UserDetailRepository.CreateUserDetail(*userDetail)
 	if err != nil {
 		// Handle the error
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	// OK Generate JWT Token
@@ -103,7 +103,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 		Token:       token,
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: registerResponse})
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: registerResponse})
 }
 
 // Login Handler
@@ -158,7 +158,6 @@ func (h *handlerAuth) Login(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: loginResponse})
-
 }
 
 // Check-Auth Handler
@@ -190,7 +189,7 @@ func (h *handlerAuth) UpdatePassword(c echo.Context) error {
 	validation := validator.New()
 	err := validation.Struct(request)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: validationError.GetValidationErrors(err)})
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: validationError.GetValidationErrors(err)})
 	}
 
 	userId := c.Get("userLogin").(jwt.MapClaims)["id"].(string)
