@@ -6,6 +6,8 @@ import (
 	"be-skripsi/models"
 	"be-skripsi/pkg/bcrypt"
 	jwtToken "be-skripsi/pkg/jwt"
+
+	validationError "be-skripsi/pkg/validation_error"
 	repository "be-skripsi/repositories"
 	"net/http"
 	"time"
@@ -36,7 +38,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	validation := validator.New()
 	err := validation.Struct(request)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: validationError.GetValidationErrors(err)})
 	}
 
 	/*
@@ -176,4 +178,46 @@ func (h *handlerAuth) CheckAuth(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: checkAuthResponse})
+}
+
+// Update Password Handler
+func (h *handlerAuth) UpdatePassword(c echo.Context) error {
+	request := new(authDto.UpdatePasswordRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: validationError.GetValidationErrors(err)})
+	}
+
+	userId := c.Get("userLogin").(jwt.MapClaims)["id"].(string)
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "User not found"})
+	}
+
+	isValid := bcrypt.CheckPasswordHash(request.OldPassword, userData.Password)
+	if !isValid {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid current password"})
+	}
+
+	if request.NewPassword == request.OldPassword {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "New password cannot be the same as current password"})
+	}
+
+	hashedPassword, err := bcrypt.HashPassword(request.NewPassword)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: "Failed to hash the new password"})
+	}
+
+	_, err = h.UserRepository.UpdateUserByEmail(userData.Email, models.User{Password: hashedPassword})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: "Failed to update the password"})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Password changed successfully!"})
 }
