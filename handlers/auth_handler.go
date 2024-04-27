@@ -7,7 +7,7 @@ import (
 	"be-skripsi/pkg/bcrypt"
 	jwtToken "be-skripsi/pkg/jwt"
 
-	validationError "be-skripsi/pkg/validation_error"
+	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
 	"net/http"
 	"time"
@@ -38,7 +38,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	validation := validator.New()
 	err := validation.Struct(request)
 	if err != nil {
-		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: validationError.GetValidationErrors(err)})
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
 	}
 
 	/*
@@ -189,7 +189,7 @@ func (h *handlerAuth) UpdatePassword(c echo.Context) error {
 	validation := validator.New()
 	err := validation.Struct(request)
 	if err != nil {
-		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: validationError.GetValidationErrors(err)})
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
 	}
 
 	userId := c.Get("userLogin").(jwt.MapClaims)["id"].(string)

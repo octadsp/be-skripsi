@@ -1,8 +1,8 @@
-package validation_error
+package error
 
 import "github.com/go-playground/validator/v10"
 
-func GetValidationErrors(err error) []struct {
+func ValidationErrors(err error) []struct {
 	Key string
 	Tag string
 } {
