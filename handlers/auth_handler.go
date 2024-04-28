@@ -6,8 +6,9 @@ import (
 	"be-skripsi/models"
 	"be-skripsi/pkg/bcrypt"
 	jwtToken "be-skripsi/pkg/jwt"
+
+	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
-	"log"
 	"net/http"
 	"time"
 
@@ -37,7 +38,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	validation := validator.New()
 	err := validation.Struct(request)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
 	}
 
 	/*
@@ -47,7 +48,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	// OK Hashing Password
 	password, err := bcrypt.HashPassword(request.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
 	}
 
 	// OK Compose payload for User
@@ -62,7 +63,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	userData, err := h.UserRepository.CreateUser(*user)
 	if err != nil {
 		// Handle the error
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	/*
@@ -80,7 +81,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	userDetailData, err := h.UserDetailRepository.CreateUserDetail(*userDetail)
 	if err != nil {
 		// Handle the error
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
 	// OK Generate JWT Token
@@ -90,7 +91,6 @@ func (h *handlerAuth) Register(c echo.Context) error {
 
 	token, errGenerateToken := jwtToken.GenerateToken(&claims)
 	if errGenerateToken != nil {
-		log.Println(errGenerateToken)
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
@@ -103,7 +103,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 		Token:       token,
 	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: registerResponse})
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: registerResponse})
 }
 
 // Login Handler
@@ -144,7 +144,6 @@ func (h *handlerAuth) Login(c echo.Context) error {
 
 	token, errGenerateToken := jwtToken.GenerateToken(&claims)
 	if errGenerateToken != nil {
-		log.Println(errGenerateToken)
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
@@ -159,7 +158,6 @@ func (h *handlerAuth) Login(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: loginResponse})
-
 }
 
 // Check-Auth Handler
@@ -168,6 +166,57 @@ func (h *handlerAuth) CheckAuth(c echo.Context) error {
 	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
 	userData, _ := h.UserRepository.GetUserByID(userId)
+	userDetailData, _ := h.UserDetailRepository.GetUserDetail(userData.ID)
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: userData})
+	checkAuthResponse := authDto.CheckAuthResponse{
+		ID:          userData.ID,
+		FullName:    userDetailData.FullName,
+		Email:       userData.Email,
+		PhoneNumber: userDetailData.PhoneNumber,
+		Role:        userData.Role,
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: checkAuthResponse})
+}
+
+// Update Password Handler
+func (h *handlerAuth) UpdatePassword(c echo.Context) error {
+	request := new(authDto.UpdatePasswordRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	userId := c.Get("userLogin").(jwt.MapClaims)["id"].(string)
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "User not found"})
+	}
+
+	isValid := bcrypt.CheckPasswordHash(request.OldPassword, userData.Password)
+	if !isValid {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid current password"})
+	}
+
+	if request.NewPassword == request.OldPassword {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "New password cannot be the same as current password"})
+	}
+
+	hashedPassword, err := bcrypt.HashPassword(request.NewPassword)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: "Failed to hash the new password"})
+	}
+
+	_, err = h.UserRepository.UpdateUserByEmail(userData.Email, models.User{Password: hashedPassword})
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: "Failed to update the password"})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Password changed successfully!"})
 }
