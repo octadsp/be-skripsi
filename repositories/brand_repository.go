@@ -47,33 +47,3 @@ func (r *repository) DeleteBrand(id string) (models.Brand, error) {
 	err := r.db.Where("id = ?", id).Delete(&brand).Error
 	return brand, err
 }
-
-// func (r *repository) GetUserByEmail(email string) (models.User, error) {
-// 	var user models.User
-// 	err := r.db.First(&user, "email = ?", email).Error
-// 	return user, err
-// }
-
-// func (r *repository) GetUserByID(ID string) (models.User, error) {
-// 	var user models.User
-// 	err := r.db.First(&user, "id = ?", ID).Error
-
-// 	return user, err
-// }
-
-// func (r *repository) GetUsers() ([]models.User, error) {
-// 	var users []models.User
-// 	err := r.db.Find(&users).Error
-// 	return users, err
-// }
-
-// func (r *repository) UpdateUserByEmail(email string, user models.User) (models.User, error) {
-// 	err := r.db.Model(&user).Where("email = ?", email).Updates(&user).Error
-// 	return user, err
-// }
-
-// func (r *repository) DeleteUserByEmail(email string) (models.User, error) {
-// 	var user models.User
-// 	err := r.db.Where("email = ?", email).Delete(&user).Error
-// 	return user, err
-// }

@@ -39,7 +39,96 @@ func (h *handlerProduct) NewProduct(c echo.Context) error {
 		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: "Ehehe"})
+	product := &models.Product{
+		ID:              uuid.New().String()[:8],
+		ProductName:     request.ProductName,
+		BrandID:         request.BrandID,
+		CategoryID:      request.CategoryID,
+		Price:           request.Price,
+		InstallationFee: request.InstallationFee,
+		OpeningStock:    request.OpeningStock,
+	}
+
+	productData, err := h.ProductRepository.CreateProduct(*product)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productData})
+}
+
+func (h *handlerProduct) GetProducts(c echo.Context) error {
+	productsData, err := h.ProductRepository.GetProducts()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productsData})
+}
+
+func (h *handlerProduct) GetProduct(c echo.Context) error {
+	id := c.Param("id")
+
+	productData, err := h.ProductRepository.GetProduct(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productData})
+}
+
+func (h *handlerProduct) UpdateProduct(c echo.Context) error {
+	id := c.Param("id")
+	request := new(productDto.UpdateProductRequest)
+
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	_, err = h.ProductRepository.GetProduct(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	product := &models.Product{
+		ProductName:     request.ProductName,
+		BrandID:         request.BrandID,
+		CategoryID:      request.CategoryID,
+		Price:           request.Price,
+		InstallationFee: request.InstallationFee,
+	}
+
+	_, err = h.ProductRepository.UpdateProduct(id, *product)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Product updated successfully!"})
+}
+
+func (h *handlerProduct) DeleteProduct(c echo.Context) error {
+	id := c.Param("id")
+
+	_, err := h.ProductRepository.GetProduct(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	_, err = h.ProductRepository.DeleteProduct(id)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Product deleted successfully!"})
 }
 
 /*

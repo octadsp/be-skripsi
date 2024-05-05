@@ -16,12 +16,14 @@ func ProductRoutes(e *echo.Group) {
 	h := handlers.HandlerProduct(productRepository, brandRepository, categoryRepository)
 
 	// Product
-	e.POST("/product/", h.NewProduct)
-	// e.GET("/products", h.GetProducts)
-	// e.GET("/product/:id", h.GetProduct)
-	// e.PUT("/product/:id", h.UpdateProduct)
+	e.POST("/product", h.NewProduct)
+	e.GET("/products", h.GetProducts)
+	e.GET("/product/:id", h.GetProduct)
+	e.PUT("/product/:id", h.UpdateProduct)
+	e.DELETE("/product/:id", h.DeleteProduct)
+	// * Product Image
+	// * Product Stock History
 	// e.PATCH("/product/:id", middleware.UploadImage(h.UpdateProductImage))
-	// e.DELETE("/product/:id", h.DeleteProduct)
 
 	// Brand
 	e.POST("/brand", h.NewBrand)
