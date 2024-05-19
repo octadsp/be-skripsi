@@ -10,11 +10,13 @@ import (
 )
 
 func AuthRoutes(e *echo.Group) {
-	authRepository := repositories.RepositoryAuth(pg.DB)
+	userRepository := repositories.RepositoryUser(pg.DB)
+	userDetailRepository := repositories.RepositoryUserDetail(pg.DB)
 
-	h := handlers.HandlerAuth(authRepository)
+	h := handlers.HandlerAuth(userRepository, userDetailRepository)
 
 	e.POST("/register", h.Register)
 	e.POST("/login", h.Login)
 	e.GET("/check-auth", middleware.Auth(h.CheckAuth))
+	e.POST("/update-password", middleware.Auth(h.UpdatePassword))
 }

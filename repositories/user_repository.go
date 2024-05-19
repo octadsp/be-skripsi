@@ -8,11 +8,12 @@ import (
 
 // declaration of the UserRepository interface, which defines methods
 type UserRepository interface {
-	FindUsers() ([]models.User, error)
-	GetUser(ID int) (models.User, error)
-	UpdateUser(user models.User) (models.User, error)
-	UpdateInfoUser(user models.User) (models.User, error)
-	DeleteUser(user models.User) (models.User, error)
+	CreateUser(user models.User) (models.User, error)
+	GetUserByEmail(email string) (models.User, error)
+	GetUserByID(ID string) (models.User, error)
+	GetUsers() ([]models.User, error)
+	UpdateUserByEmail(email string, user models.User) (models.User, error)
+	DeleteUserByEmail(email string) (models.User, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -21,34 +22,50 @@ func RepositoryUser(db *gorm.DB) *repository {
 }
 
 // queries the "users" table in the database and scans the results into a slice of Users models.
-func (r *repository) FindUsers() ([]models.User, error) {
-	var users []models.User
-	err := r.db.Find(&users).Error // Using Find method
 
+// func (r *repository) FindUsers() ([]models.User, error)
+
+// func (r *repository) GetUser(ID int) (models.User, error)
+
+// func (r *repository) UpdateUser(user models.User) (models.User, error)
+
+// func (r *repository) UpdateInfoUser(user models.User) (models.User, error)
+
+// func (r *repository) DeleteUser(user models.User) (models.User, error)
+
+// =======================================================================
+
+func (r *repository) CreateUser(user models.User) (models.User, error) {
+	err := r.db.Create(&user).Error // Using Create method
+	return user, err
+}
+
+func (r *repository) GetUserByEmail(email string) (models.User, error) {
+	var user models.User
+	err := r.db.First(&user, "email = ?", email).Error
+	return user, err
+}
+
+func (r *repository) GetUserByID(ID string) (models.User, error) {
+	var user models.User
+	err := r.db.First(&user, "id = ?", ID).Error
+
+	return user, err
+}
+
+func (r *repository) GetUsers() ([]models.User, error) {
+	var users []models.User
+	err := r.db.Find(&users).Error
 	return users, err
 }
 
-func (r *repository) GetUser(ID int) (models.User, error) {
+func (r *repository) UpdateUserByEmail(email string, user models.User) (models.User, error) {
+	err := r.db.Model(&user).Where("email = ?", email).Updates(&user).Error
+	return user, err
+}
+
+func (r *repository) DeleteUserByEmail(email string) (models.User, error) {
 	var user models.User
-	err := r.db.First(&user, ID).Error // Using First method
-
-	return user, err
-}
-
-func (r *repository) UpdateUser(user models.User) (models.User, error) {
-	err := r.db.Save(&user).Error
-
-	return user, err
-}
-
-func (r *repository) UpdateInfoUser(user models.User) (models.User, error) {
-	err := r.db.Save(&user).Error
-
-	return user, err
-}
-
-func (r *repository) DeleteUser(user models.User) (models.User, error) {
-	err := r.db.Delete(&user).Error // Using Delete method
-
+	err := r.db.Where("email = ?", email).Delete(&user).Error
 	return user, err
 }
