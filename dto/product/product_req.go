@@ -16,3 +16,7 @@ type UpdateProductRequest struct {
 	Price           int64  `json:"price" form:"price"`
 	InstallationFee int64  `json:"installation_fee" form:"installation_fee"`
 }
+
+type UpdateProductImageRequest struct {
+	Image string `json:"image" form:"image"`
+}

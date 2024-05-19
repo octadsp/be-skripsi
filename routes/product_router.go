@@ -2,6 +2,7 @@ package routes
 
 import (
 	"be-skripsi/handlers"
+	"be-skripsi/pkg/middleware"
 	"be-skripsi/pkg/pg"
 	"be-skripsi/repositories"
 
@@ -21,9 +22,12 @@ func ProductRoutes(e *echo.Group) {
 	e.GET("/product/:id", h.GetProduct)
 	e.PUT("/product/:id", h.UpdateProduct)
 	e.DELETE("/product/:id", h.DeleteProduct)
+
 	// * Product Image
+	e.PATCH("/product-image/:product_id", middleware.UploadImage(h.UpdateProductImage))
+	e.DELETE("/product-image/:product_image_id", h.DeleteProductImage)
+
 	// * Product Stock History
-	// e.PATCH("/product/:id", middleware.UploadImage(h.UpdateProductImage))
 
 	// Brand
 	e.POST("/brand", h.NewBrand)

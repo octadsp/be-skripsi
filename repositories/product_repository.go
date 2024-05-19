@@ -13,6 +13,8 @@ type ProductRepository interface {
 	GetProduct(id string) (models.Product, error)
 	UpdateProduct(id string, product models.Product) (models.Product, error)
 	DeleteProduct(id string) (models.Product, error)
+	CreateProductImage(productImage models.ProductImage) (models.ProductImage, error)
+	DeleteProductImage(id string) (models.ProductImage, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -46,4 +48,15 @@ func (r *repository) DeleteProduct(id string) (models.Product, error) {
 	var product models.Product
 	err := r.db.Where("id = ?", id).Delete(&product).Error
 	return product, err
+}
+
+func (r *repository) CreateProductImage(productImage models.ProductImage) (models.ProductImage, error) {
+	err := r.db.Create(&productImage).Error
+	return productImage, err
+}
+
+func (r *repository) DeleteProductImage(id string) (models.ProductImage, error) {
+	var productImage models.ProductImage
+	err := r.db.Where("id = ?", id).Delete(&productImage).Error
+	return productImage, err
 }

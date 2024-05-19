@@ -131,6 +131,64 @@ func (h *handlerProduct) DeleteProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Product deleted successfully!"})
 }
 
+func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
+	// id := c.Param("product_id")
+
+	imageFile := c.Get("image").(string)
+	return c.JSON(http.StatusOK, imageFile)
+
+	// request := productDto.UpdateProductImageRequest{
+	// 	Image: imageFile,
+	// }
+
+	// validation := validator.New()
+	// err := validation.Struct(request)
+	// if err != nil {
+	// 	return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	// }
+
+	// var ctx = context.Background()
+	// var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	// var API_KEY = os.Getenv("API_KEY")
+	// var API_SECRET = os.Getenv("API_SECRET")
+
+	// // Add your Cloudinary credentials ...
+	// cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+
+	// // Upload file to Cloudinary ...
+	// resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "skripsi"})
+
+	// if err != nil {
+	// 	fmt.Println(err.Error())
+	// }
+
+	// productImage := &models.ProductImage{
+	// 	ID:        uuid.New().String()[:8],
+	// 	ProductID: id,
+	// 	ImageURL:  resp.SecureURL,
+	// }
+
+	// productImageData, err := h.ProductRepository.CreateProductImage(*productImage)
+	// if err != nil {
+	// 	// Handle the error
+	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	// }
+
+	// return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productImageData})
+}
+
+func (h *handlerProduct) DeleteProductImage(c echo.Context) error {
+	id := c.Param("product_image_id")
+
+	_, err := h.ProductRepository.DeleteProductImage(id)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Product Image deleted successfully!"})
+}
+
 /*
  * 	Brand
  */
