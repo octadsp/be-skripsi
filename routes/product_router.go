@@ -11,10 +11,11 @@ import (
 
 func ProductRoutes(e *echo.Group) {
 	productRepository := repositories.RepositoryProduct(pg.DB)
+	productImageRepository := repositories.RepositoryProductImage(pg.DB)
 	brandRepository := repositories.RepositoryBrand(pg.DB)
 	categoryRepository := repositories.RepositoryCategory(pg.DB)
 
-	h := handlers.HandlerProduct(productRepository, brandRepository, categoryRepository)
+	h := handlers.HandlerProduct(productRepository, productImageRepository, brandRepository, categoryRepository)
 
 	// Product
 	e.POST("/product", h.NewProduct)
@@ -28,6 +29,7 @@ func ProductRoutes(e *echo.Group) {
 	e.DELETE("/product-image/:product_image_id", h.DeleteProductImage)
 
 	// * Product Stock History
+	// e.POST("/product-stock/:product_id", h.UpdateProductStock)
 
 	// Brand
 	e.POST("/brand", h.NewBrand)

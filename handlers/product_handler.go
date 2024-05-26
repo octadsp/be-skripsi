@@ -19,13 +19,18 @@ import (
 )
 
 type handlerProduct struct {
-	ProductRepository  repository.ProductRepository
-	BrandRepository    repository.BrandRepository
-	CategoryRepository repository.CategoryRepository
+	ProductRepository      repository.ProductRepository
+	ProductImageRepository repository.ProductImageRepository
+	BrandRepository        repository.BrandRepository
+	CategoryRepository     repository.CategoryRepository
 }
 
-func HandlerProduct(ProductRepository repository.ProductRepository, BrandRepository repository.BrandRepository, CategoryRepository repository.CategoryRepository) *handlerProduct {
-	return &handlerProduct{ProductRepository, BrandRepository, CategoryRepository}
+func HandlerProduct(
+	ProductRepository repository.ProductRepository,
+	ProductImageRepository repository.ProductImageRepository,
+	BrandRepository repository.BrandRepository,
+	CategoryRepository repository.CategoryRepository) *handlerProduct {
+	return &handlerProduct{ProductRepository, ProductImageRepository, BrandRepository, CategoryRepository}
 }
 
 /*
@@ -172,7 +177,7 @@ func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
 		ImageURL:  resp.SecureURL,
 	}
 
-	productImageData, err := h.ProductRepository.CreateProductImage(*productImage)
+	productImageData, err := h.ProductImageRepository.CreateProductImage(*productImage)
 	if err != nil {
 		// Handle the error
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
@@ -184,7 +189,7 @@ func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
 func (h *handlerProduct) DeleteProductImage(c echo.Context) error {
 	id := c.Param("product_image_id")
 
-	_, err := h.ProductRepository.DeleteProductImage(id)
+	_, err := h.ProductImageRepository.DeleteProductImage(id)
 	if err != nil {
 		// Handle the error
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
