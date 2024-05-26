@@ -21,20 +21,6 @@ func RepositoryUser(db *gorm.DB) *repository {
 	return &repository{db} // returns a pointer to a new repository struct initialized with the provided database connection.
 }
 
-// queries the "users" table in the database and scans the results into a slice of Users models.
-
-// func (r *repository) FindUsers() ([]models.User, error)
-
-// func (r *repository) GetUser(ID int) (models.User, error)
-
-// func (r *repository) UpdateUser(user models.User) (models.User, error)
-
-// func (r *repository) UpdateInfoUser(user models.User) (models.User, error)
-
-// func (r *repository) DeleteUser(user models.User) (models.User, error)
-
-// =======================================================================
-
 func (r *repository) CreateUser(user models.User) (models.User, error) {
 	err := r.db.Create(&user).Error // Using Create method
 	return user, err
