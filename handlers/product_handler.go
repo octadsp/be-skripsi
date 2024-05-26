@@ -160,7 +160,7 @@ func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
 	cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
 
 	// Upload file to Cloudinary ...
-	resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "skripsi-anstem"})
+	resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "skripsi-anstem-product"})
 
 	if err != nil {
 		fmt.Println(err.Error())
