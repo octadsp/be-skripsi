@@ -13,7 +13,7 @@ type UserAddress struct {
 	DistrictID     string         `json:"district_id" gorm:"type: varchar(50)"`
 	District       MasterDistrict `json:"district" gorm:"foreignKey:DistrictID"`
 	AddressLine    string         `json:"address_line" gorm:"type: varchar(50)"`
-	DefaultAddress string         `json:"default_address" gorm:"type: varchar(50)"`
+	DefaultAddress bool           `json:"default_address" default:"false"`
 	Creation       time.Time      `json:"creation" gorm:"autoCreateTime"`
 	Modified       time.Time      `json:"modified" gorm:"autoCreateTime"`
 }
