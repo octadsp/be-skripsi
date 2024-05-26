@@ -14,6 +14,7 @@ type Product struct {
 	Price           int64          `json:"price"`
 	InstallationFee int64          `json:"installation_fee"`
 	OpeningStock    int64          `json:"opening_stock" gorm:"default:0"`
+	Stock           int64          `json:"stock" gorm:"default:0"`
 	Creation        time.Time      `json:"creation" gorm:"autoCreateTime"`
 	Modified        time.Time      `json:"modified" gorm:"autoCreateTime"`
 	ProductImage    []ProductImage `json:"product_image" gorm:"foreignKey:ProductID"`
