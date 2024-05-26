@@ -20,3 +20,8 @@ type UpdateProductRequest struct {
 type UpdateProductImageRequest struct {
 	Image string `json:"image" form:"image"`
 }
+
+type UpdateProductStockRequest struct {
+	ChangeType string `json:"change_type" form:"change_type"`
+	Quantity   int64  `json:"quantity" form:"quantity"`
+}

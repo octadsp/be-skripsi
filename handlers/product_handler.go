@@ -19,18 +19,27 @@ import (
 )
 
 type handlerProduct struct {
-	ProductRepository      repository.ProductRepository
-	ProductImageRepository repository.ProductImageRepository
-	BrandRepository        repository.BrandRepository
-	CategoryRepository     repository.CategoryRepository
+	ProductRepository             repository.ProductRepository
+	ProductImageRepository        repository.ProductImageRepository
+	ProductStockHistoryRepository repository.ProductStockHistoryRepository
+	BrandRepository               repository.BrandRepository
+	CategoryRepository            repository.CategoryRepository
 }
 
 func HandlerProduct(
 	ProductRepository repository.ProductRepository,
 	ProductImageRepository repository.ProductImageRepository,
+	ProductStockHistoryRepository repository.ProductStockHistoryRepository,
 	BrandRepository repository.BrandRepository,
-	CategoryRepository repository.CategoryRepository) *handlerProduct {
-	return &handlerProduct{ProductRepository, ProductImageRepository, BrandRepository, CategoryRepository}
+	CategoryRepository repository.CategoryRepository,
+) *handlerProduct {
+	return &handlerProduct{
+		ProductRepository,
+		ProductImageRepository,
+		ProductStockHistoryRepository,
+		BrandRepository,
+		CategoryRepository,
+	}
 }
 
 /*
@@ -59,7 +68,13 @@ func (h *handlerProduct) NewProduct(c echo.Context) error {
 		OpeningStock:    request.OpeningStock,
 	}
 
-	productData, err := h.ProductRepository.CreateProduct(*product)
+	_, err = h.ProductRepository.CreateProduct(*product)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	productData, err := h.ProductRepository.GetProduct(product.ID)
 	if err != nil {
 		// Handle the error
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
@@ -141,6 +156,9 @@ func (h *handlerProduct) DeleteProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Product deleted successfully!"})
 }
 
+/*
+ * 	Product Image
+ */
 func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
 	id := c.Param("product_id")
 
@@ -196,6 +214,50 @@ func (h *handlerProduct) DeleteProductImage(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Product Image deleted successfully!"})
+}
+
+/*
+ * 	Product Image
+ */
+func (h *handlerProduct) UpdateProductStock(c echo.Context) error {
+	// id := c.Param("product_id")
+
+	request := new(productDto.UpdateProductStockRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	// TODO Fetch previous stock
+
+	// TODO Calculate new stock
+
+	// TODO Insert Product Stock History
+
+	// TODO Update Product Stock
+
+	product := &models.Product{
+		ID: uuid.New().String()[:8],
+		// ProductName:     request.ProductName,
+		// BrandID:         request.BrandID,
+		// CategoryID:      request.CategoryID,
+		// Price:           request.Price,
+		// InstallationFee: request.InstallationFee,
+		// OpeningStock:    request.OpeningStock,
+	}
+
+	productData, err := h.ProductRepository.CreateProduct(*product)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productData})
 }
 
 /*
