@@ -6,8 +6,13 @@ import (
 	"be-skripsi/models"
 	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
+	"context"
+	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -132,49 +137,48 @@ func (h *handlerProduct) DeleteProduct(c echo.Context) error {
 }
 
 func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
-	// id := c.Param("product_id")
+	id := c.Param("product_id")
 
 	imageFile := c.Get("image").(string)
-	return c.JSON(http.StatusOK, imageFile)
 
-	// request := productDto.UpdateProductImageRequest{
-	// 	Image: imageFile,
-	// }
+	request := productDto.UpdateProductImageRequest{
+		Image: imageFile,
+	}
 
-	// validation := validator.New()
-	// err := validation.Struct(request)
-	// if err != nil {
-	// 	return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
-	// }
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
 
-	// var ctx = context.Background()
-	// var CLOUD_NAME = os.Getenv("CLOUD_NAME")
-	// var API_KEY = os.Getenv("API_KEY")
-	// var API_SECRET = os.Getenv("API_SECRET")
+	var ctx = context.Background()
+	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	var API_KEY = os.Getenv("API_KEY")
+	var API_SECRET = os.Getenv("API_SECRET")
 
-	// // Add your Cloudinary credentials ...
-	// cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+	// Add your Cloudinary credentials ...
+	cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
 
-	// // Upload file to Cloudinary ...
-	// resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "skripsi"})
+	// Upload file to Cloudinary ...
+	resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "skripsi-anstem"})
 
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
-	// productImage := &models.ProductImage{
-	// 	ID:        uuid.New().String()[:8],
-	// 	ProductID: id,
-	// 	ImageURL:  resp.SecureURL,
-	// }
+	productImage := &models.ProductImage{
+		ID:        uuid.New().String()[:8],
+		ProductID: id,
+		ImageURL:  resp.SecureURL,
+	}
 
-	// productImageData, err := h.ProductRepository.CreateProductImage(*productImage)
-	// if err != nil {
-	// 	// Handle the error
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
+	productImageData, err := h.ProductRepository.CreateProductImage(*productImage)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
 
-	// return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productImageData})
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productImageData})
 }
 
 func (h *handlerProduct) DeleteProductImage(c echo.Context) error {
