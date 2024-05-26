@@ -25,7 +25,6 @@ func RunMigration() {
 		&models.CartItem{},
 		&models.OrderPayment{},
 		&models.DeliveryFare{},
-		&models.FreeDeliverySetting{},
 	)
 
 	if err != nil {
