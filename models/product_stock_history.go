@@ -4,7 +4,7 @@ import "time"
 
 type ProductStockHistory struct {
 	ID            string    `json:"id" gorm:"primary_key;type:varchar(140)"`
-	ProductID     string    `json:"product_id" gorm:"type: varchar(140); unique "`
+	ProductID     string    `json:"product_id" gorm:"type: varchar(140)"`
 	Product       Product   `json:"product" gorm:"foreignKey:ProductID"`
 	PreviousStock int64     `json:"previous_stock"`
 	NewStock      int64     `json:"new_stock"`

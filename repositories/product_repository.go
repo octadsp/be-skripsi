@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"be-skripsi/models"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -13,8 +14,7 @@ type ProductRepository interface {
 	GetProduct(id string) (models.Product, error)
 	UpdateProduct(id string, product models.Product) (models.Product, error)
 	DeleteProduct(id string) (models.Product, error)
-	CreateProductImage(productImage models.ProductImage) (models.ProductImage, error)
-	DeleteProductImage(id string) (models.ProductImage, error)
+	UpdateProductStock(id string, operator string, quantity int64, product models.Product) (models.Product, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -44,25 +44,14 @@ func (r *repository) UpdateProduct(id string, product models.Product) (models.Pr
 	return product, err
 }
 
+func (r *repository) UpdateProductStock(id string, operator string, quantity int64, product models.Product) (models.Product, error) {
+	err := r.db.Model(&product).Where("id = ?", id).UpdateColumn("stock", gorm.Expr(fmt.Sprintf("stock %s ?", operator), quantity)).Error
+
+	return product, err
+}
+
 func (r *repository) DeleteProduct(id string) (models.Product, error) {
 	var product models.Product
 	err := r.db.Where("id = ?", id).Delete(&product).Error
 	return product, err
-}
-
-func (r *repository) CreateProductImage(productImage models.ProductImage) (models.ProductImage, error) {
-	err := r.db.Create(&productImage).Error
-	return productImage, err
-}
-
-func (r *repository) DeleteProductImage(id string) (models.ProductImage, error) {
-	var productImage models.ProductImage
-	err := r.db.Where("id = ?", id).Delete(&productImage).Error
-	return productImage, err
-}
-
-func (r *repository) GetProductImages(productId string) ([]models.ProductImage, error) {
-	var productImages []models.ProductImage
-	err := r.db.Where("product_id = ?", productId).Find(&productImages).Error
-	return productImages, err
 }
