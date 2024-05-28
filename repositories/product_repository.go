@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"be-skripsi/models"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -13,6 +14,7 @@ type ProductRepository interface {
 	GetProduct(id string) (models.Product, error)
 	UpdateProduct(id string, product models.Product) (models.Product, error)
 	DeleteProduct(id string) (models.Product, error)
+	UpdateProductStock(id string, operator string, quantity int64, product models.Product) (models.Product, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -39,6 +41,12 @@ func (r *repository) GetProduct(id string) (models.Product, error) {
 
 func (r *repository) UpdateProduct(id string, product models.Product) (models.Product, error) {
 	err := r.db.Model(&product).Where("id = ?", id).Updates(&product).Error
+	return product, err
+}
+
+func (r *repository) UpdateProductStock(id string, operator string, quantity int64, product models.Product) (models.Product, error) {
+	err := r.db.Model(&product).Where("id = ?", id).UpdateColumn("stock", gorm.Expr(fmt.Sprintf("stock %s ?", operator), quantity)).Error
+
 	return product, err
 }
 

@@ -80,7 +80,53 @@ func (h *handlerProduct) NewProduct(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productData})
+	if request.OpeningStock > 0 {
+		productId := productData.ID
+		changeType := "plus"
+		quantity := request.OpeningStock
+
+		// OK Calculate new stock
+		newStock := int64(0)
+		operator := ""
+		switch changeType {
+		case "plus":
+			newStock = int64(productData.Stock + quantity)
+			operator = string("+")
+		case "minus":
+			if productData.Stock < quantity {
+				return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: "Request quantity exceeding in stock quantity"})
+			} else {
+				newStock = int64(productData.Stock - quantity)
+				operator = string("-")
+			}
+		}
+
+		// OK Insert Product Stock History
+		productStockHistory := &models.ProductStockHistory{
+			ID:            uuid.New().String()[:8],
+			ProductID:     productId,
+			PreviousStock: productData.Stock,
+			NewStock:      newStock,
+		}
+		_, err = h.ProductStockHistoryRepository.InsertProductStockHistory(*productStockHistory)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+
+		// OK Update Product Stock
+		_, err := h.ProductRepository.UpdateProductStock(productId, operator, quantity, models.Product{})
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+	}
+
+	latestProductData, err := h.ProductRepository.GetProduct(product.ID)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: latestProductData})
 }
 
 func (h *handlerProduct) GetProducts(c echo.Context) error {
@@ -217,10 +263,10 @@ func (h *handlerProduct) DeleteProductImage(c echo.Context) error {
 }
 
 /*
- * 	Product Image
+ * 	Product Stock History
  */
 func (h *handlerProduct) UpdateProductStock(c echo.Context) error {
-	// id := c.Param("product_id")
+	productId := c.Param("product_id")
 
 	request := new(productDto.UpdateProductStockRequest)
 	if err := c.Bind(request); err != nil {
@@ -233,31 +279,47 @@ func (h *handlerProduct) UpdateProductStock(c echo.Context) error {
 		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
 	}
 
-	// TODO Fetch previous stock
-
-	// TODO Calculate new stock
-
-	// TODO Insert Product Stock History
-
-	// TODO Update Product Stock
-
-	product := &models.Product{
-		ID: uuid.New().String()[:8],
-		// ProductName:     request.ProductName,
-		// BrandID:         request.BrandID,
-		// CategoryID:      request.CategoryID,
-		// Price:           request.Price,
-		// InstallationFee: request.InstallationFee,
-		// OpeningStock:    request.OpeningStock,
+	// OK Fetch previous stock
+	previousProductData, err := h.ProductRepository.GetProduct(productId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ErrorResultJSON{Status: http.StatusNotFound, Message: err.Error()})
 	}
 
-	productData, err := h.ProductRepository.CreateProduct(*product)
+	// OK Calculate new stock
+	newStock := int64(0)
+	operator := ""
+	switch request.ChangeType {
+	case "plus":
+		newStock = int64(previousProductData.Stock + request.Quantity)
+		operator = string("+")
+	case "minus":
+		if previousProductData.Stock < request.Quantity {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: "Request quantity exceeding in stock quantity"})
+		} else {
+			newStock = int64(previousProductData.Stock - request.Quantity)
+			operator = string("-")
+		}
+	}
+
+	// OK Insert Product Stock History
+	productStockHistory := &models.ProductStockHistory{
+		ID:            uuid.New().String()[:8],
+		ProductID:     productId,
+		PreviousStock: previousProductData.Stock,
+		NewStock:      newStock,
+	}
+	_, err = h.ProductStockHistoryRepository.InsertProductStockHistory(*productStockHistory)
 	if err != nil {
-		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	// OK Update Product Stock
+	productUpdateData, err := h.ProductRepository.UpdateProductStock(productId, operator, request.Quantity, models.Product{})
+	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productData})
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productUpdateData})
 }
 
 /*
