@@ -1,26 +1,34 @@
 package routes
 
-// import (
-// 	"be-skripsi/handlers"
-// 	// "be-skripsi/pkg/middleware"
-// 	"be-skripsi/pkg/pg"
-// 	"be-skripsi/repositories"
+import (
+	"be-skripsi/handlers"
+	"be-skripsi/pkg/pg"
+	"be-skripsi/repositories"
 
-// 	"github.com/labstack/echo/v4"
-// )
+	"github.com/labstack/echo/v4"
+)
 
-// func UserRoutes(e *echo.Group) {
-// 	userRepository := repositories.RepositoryUser(pg.DB)
-// 	userDetailRepository := repositories.RepositoryUserDetail((pg.DB))
-// 	userAddressRepository := repositories.RepositoryUserAddress((pg.DB))
-// 	h := handlers.HandlerUser(userRepository, userDetailRepository, userAddressRepository)
+func UserRoutes(e *echo.Group) {
+	userRepository := repositories.RepositoryUser(pg.DB)
+	userDetailRepository := repositories.RepositoryUserDetail((pg.DB))
+	userAddressRepository := repositories.RepositoryUserAddress((pg.DB))
+	h := handlers.HandlerUser(userRepository, userDetailRepository, userAddressRepository)
 
-// 	e.POST("/register", h.Register)
-// 	e.POST("/login", h.Login)
+	// User Detail
 
-//		// e.GET("/users", h.FindUsers)
-//		// e.GET("/user/:id", h.GetUser)
-//		// e.PATCH("/user-image/:id", middleware.UploadImage(h.UpdateUser))
-//		// e.PATCH("/user-info/:id", h.UpdateInfoUser)
-//		// e.DELETE("/user/:id", h.DeleteUser)
-//	}
+	// User Address
+
+	// * Master Province
+	e.GET("/provinces", h.GetProvinces)
+	e.GET("/province/:id", h.GetProvinceByID)
+
+	// * Master Regency
+	e.GET("/regencies", h.GetRegencies)
+	e.GET("/regencies/:province_id", h.GetRegenciesByProvinceID)
+	e.GET("/regency/:id", h.GetRegencyByID)
+
+	// * Master District
+	e.GET("/districts", h.GetDistricts)
+	e.GET("/districts/:regency_id", h.GetDistrictsByRegencyID)
+	e.GET("/district/:id", h.GetDistrictByID)
+}
