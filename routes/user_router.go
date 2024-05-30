@@ -2,6 +2,7 @@ package routes
 
 import (
 	"be-skripsi/handlers"
+	"be-skripsi/pkg/middleware"
 	"be-skripsi/pkg/pg"
 	"be-skripsi/repositories"
 
@@ -15,8 +16,14 @@ func UserRoutes(e *echo.Group) {
 	h := handlers.HandlerUser(userRepository, userDetailRepository, userAddressRepository)
 
 	// User Detail
+	e.PUT("/user-detail", middleware.Auth(h.UpdateUserDetail))
 
 	// User Address
+	e.POST("/user-address", middleware.Auth(h.NewUserAddress))
+	e.GET("/user-addresses", middleware.Auth(h.GetUserAddresses))
+	e.GET("/user-address/:id", middleware.Auth(h.GetUserAddressByID))
+	e.PUT("/user-address/:id", middleware.Auth(h.UpdateUserAddressByID))
+	e.DELETE("/user-address/:id", middleware.Auth(h.DeleteUserAddressByID))
 
 	// * Master Province
 	e.GET("/provinces", h.GetProvinces)

@@ -9,6 +9,10 @@ import (
 // declaration of the UserAddressRepository interface, which defines methods
 type UserAddressRepository interface {
 	CreateUserAddress(user models.UserAddress) (models.UserAddress, error)
+	GetUserAddressByID(user_address_id string) (models.UserAddress, error)
+	GetUserAddresses(user_id string) ([]models.UserAddress, error)
+	UpdateUserAddressByID(user_address_id string, user_address models.UserAddress) (models.UserAddress, error)
+	DeleteUserAddressByID(user_address_id string) (models.UserAddress, error)
 	GetProvinces() ([]models.MasterProvince, error)
 	GetProvinceByID(province_id string) (models.MasterProvince, error)
 	GetRegencies() ([]models.MasterRegency, error)
@@ -24,9 +28,33 @@ func RepositoryUserAddress(db *gorm.DB) *repository {
 	return &repository{db} // returns a pointer to a new repository struct initialized with the provided database connection.
 }
 
-func (r *repository) CreateUserAddress(UserAddress models.UserAddress) (models.UserAddress, error) {
-	err := r.db.Create(&UserAddress).Error // Using Create method
-	return UserAddress, err
+// User Address
+func (r *repository) CreateUserAddress(user_address models.UserAddress) (models.UserAddress, error) {
+	err := r.db.Create(&user_address).Error // Using Create method
+	return user_address, err
+}
+
+func (r *repository) GetUserAddressByID(user_address_id string) (models.UserAddress, error) {
+	var userAddress models.UserAddress
+	err := r.db.First(&userAddress, "id = ?", user_address_id).Error
+	return userAddress, err
+}
+
+func (r *repository) GetUserAddresses(user_id string) ([]models.UserAddress, error) {
+	var userAddresses []models.UserAddress
+	err := r.db.Where("user_id = ?", user_id).Find(&userAddresses).Error
+	return userAddresses, err
+}
+
+func (r *repository) UpdateUserAddressByID(user_address_id string, user_address models.UserAddress) (models.UserAddress, error) {
+	err := r.db.Model(&user_address).Where("id = ?", user_address_id).Updates(&user_address).Error
+	return user_address, err
+}
+
+func (r *repository) DeleteUserAddressByID(user_address_id string) (models.UserAddress, error) {
+	var userAddress models.UserAddress
+	err := r.db.Where("id = ?", user_address_id).Delete(&userAddress).Error
+	return userAddress, err
 }
 
 // Provinces
