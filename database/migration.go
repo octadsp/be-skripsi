@@ -12,7 +12,7 @@ func RunMigration() {
 		&models.UserDetail{},
 		&models.UserAddress{},
 		&models.MasterProvince{},
-		&models.MasterCity{},
+		&models.MasterRegency{},
 		&models.MasterDistrict{},
 		&models.Message{},
 		&models.Product{},

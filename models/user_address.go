@@ -8,8 +8,8 @@ type UserAddress struct {
 	User           User           `json:"user" gorm:"foreignKey:UserID"`
 	ProvinceID     string         `json:"province_id" gorm:"type: varchar(100)"`
 	Province       MasterProvince `json:"province" gorm:"foreignKey:ProvinceID"`
-	CityID         string         `json:"city_id" gorm:"type: varchar(50)"`
-	City           MasterCity     `json:"city" gorm:"foreignKey:CityID"`
+	RegencyID      string         `json:"regency_id" gorm:"type: varchar(50)"`
+	Regency        MasterRegency  `json:"regency" gorm:"foreignKey:RegencyID"`
 	DistrictID     string         `json:"district_id" gorm:"type: varchar(50)"`
 	District       MasterDistrict `json:"district" gorm:"foreignKey:DistrictID"`
 	AddressLine    string         `json:"address_line" gorm:"type: varchar(50)"`
