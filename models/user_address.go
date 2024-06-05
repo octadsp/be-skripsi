@@ -4,15 +4,15 @@ import "time"
 
 type UserAddress struct {
 	ID             string         `json:"id" gorm:"primary_key;type:varchar(140)"`
-	UserID         string         `json:"user_id" gorm:"type: varchar(100); unique "`
+	UserID         string         `json:"user_id" gorm:"type: varchar(140)"`
 	User           User           `json:"user" gorm:"foreignKey:UserID"`
-	ProvinceID     string         `json:"province_id" gorm:"type: varchar(100)"`
+	ProvinceID     string         `json:"province_id" gorm:"type: varchar(2)"`
 	Province       MasterProvince `json:"province" gorm:"foreignKey:ProvinceID"`
-	RegencyID      string         `json:"regency_id" gorm:"type: varchar(50)"`
+	RegencyID      string         `json:"regency_id" gorm:"type: varchar(4)"`
 	Regency        MasterRegency  `json:"regency" gorm:"foreignKey:RegencyID"`
-	DistrictID     string         `json:"district_id" gorm:"type: varchar(50)"`
+	DistrictID     string         `json:"district_id" gorm:"type: varchar(7)"`
 	District       MasterDistrict `json:"district" gorm:"foreignKey:DistrictID"`
-	AddressLine    string         `json:"address_line" gorm:"type: varchar(50)"`
+	AddressLine    string         `json:"address_line" gorm:"type:text"`
 	DefaultAddress bool           `json:"default_address" default:"false"`
 	Creation       time.Time      `json:"creation" gorm:"autoCreateTime"`
 	Modified       time.Time      `json:"modified" gorm:"autoCreateTime"`

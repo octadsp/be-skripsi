@@ -4,9 +4,9 @@ import "time"
 
 type OrderItem struct {
 	ID               string    `json:"id" gorm:"primary_key;type:varchar(140)"`
-	OrderID          string    `json:"order_id" gorm:"type: varchar(100); unique "`
+	OrderID          string    `json:"order_id" gorm:"type: varchar(140)"`
 	Order            Order     `json:"order" gorm:"foreignKey:OrderID"`
-	ProductID        string    `json:"product_id" gorm:"type: varchar(100); unique "`
+	ProductID        string    `json:"product_id" gorm:"type: varchar(140)"`
 	Product          Product   `json:"product" gorm:"foreignKey:ProductID"`
 	WithInstallation bool      `json:"with_installation"`
 	Qty              int64     `json:"qty"`
