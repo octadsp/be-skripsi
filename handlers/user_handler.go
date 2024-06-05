@@ -96,6 +96,14 @@ func (h *handlerUser) NewUserAddress(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, dto.ErrorResult{Status: http.StatusNotFound, Message: err.Error()})
 	}
 
+	if request.DefaultAddress {
+		// OK Update user's other default address to false
+		err := h.UserAddressRepository.UpdateUserDefaultAddress(userAddressData.ID, userId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+	}
+
 	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: userAddressData})
 }
 
@@ -154,10 +162,19 @@ func (h *handlerUser) UpdateUserAddressByID(c echo.Context) error {
 	}
 
 	userAddress := &models.UserAddress{
-		ProvinceID:  request.ProvinceID,
-		RegencyID:   request.RegencyID,
-		DistrictID:  request.DistrictID,
-		AddressLine: request.AddressLine,
+		ProvinceID:     request.ProvinceID,
+		RegencyID:      request.RegencyID,
+		DistrictID:     request.DistrictID,
+		AddressLine:    request.AddressLine,
+		DefaultAddress: request.DefaultAddress,
+	}
+
+	if request.DefaultAddress {
+		// OK Update user's other default address to false
+		err := h.UserAddressRepository.UpdateUserDefaultAddress(userAddressId, userId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
 	}
 
 	_, err = h.UserAddressRepository.UpdateUserAddressByID(userAddressId, *userAddress)
