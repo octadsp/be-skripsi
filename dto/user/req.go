@@ -1,24 +1,22 @@
-package usersdto
+package userdto
 
-type UserRequest struct {
-	FullName  string `json:"fullname" form:"fullname"`
-	LastName  string `json:"lastname" form:"lastname"`
-	Institute string `json:"institute" form:"institute"`
-	Email     string `json:"email" form:"email"`
-	Password  string `json:"password" form:"password"`
-	Phone     string `json:"phone" form:"phone"`
-	Address   string `json:"address" form:"address"`
-	Avatar    string `json:"image" form:"image"`
-	Status    string `json:"status" form:"status"`
-	Roles     string `json:"roles" form:"roles"`
+type UserDetailUpdateRequest struct {
+	FullName    string `json:"full_name" form:"full_name" validate:"required"`
+	PhoneNumber string `json:"phone_number" form:"phone_number" validate:"required"`
 }
 
-type UserUpdateRequest struct {
-	FullName  string `json:"fullname" form:"fullname"`
-	LastName  string `json:"lastname" form:"lastname"`
-	Institute string `json:"institute" form:"institute"`
-	Email     string `json:"email" form:"email"`
-	Phone     string `json:"phone" form:"phone"`
-	Address   string `json:"address" form:"address"`
-	Avatar    string `json:"image" form:"image"`
+type NewUserAddressRequest struct {
+	ProvinceID     string `json:"province_id" form:"province_id" validate:"required"`
+	RegencyID      string `json:"regency_id" form:"regency_id" validate:"required"`
+	DistrictID     string `json:"district_id" form:"district_id" validate:"required"`
+	AddressLine    string `json:"address_line" form:"address_line" validate:"required"`
+	DefaultAddress bool   `json:"default_address" form:"default_address"`
+}
+
+type UpdateUserAddressRequest struct {
+	ProvinceID     string `json:"province_id" form:"province_id"`
+	RegencyID      string `json:"regency_id" form:"regency_id"`
+	DistrictID     string `json:"district_id" form:"district_id"`
+	AddressLine    string `json:"address_line" form:"address_line"`
+	DefaultAddress bool   `json:"default_address" form:"default_address"`
 }

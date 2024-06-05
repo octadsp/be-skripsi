@@ -1,22 +1,18 @@
 package handlers
 
 import (
-	// authDto "be-skripsi/dto/auth"
 	dto "be-skripsi/dto/results"
+	userDto "be-skripsi/dto/user"
+	"be-skripsi/models"
+	errors "be-skripsi/pkg/error"
 
-	// bcrypt "be-skripsi/pkg/bcrypt"
 	"be-skripsi/repositories"
 
-	// "fmt"
 	"net/http"
-	// "os"
-	// "strconv"
 
-	// "context"
-
-	// "github.com/cloudinary/cloudinary-go/v2"
-	// "github.com/cloudinary/cloudinary-go/v2/api/uploader"
-
+	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -30,167 +26,263 @@ func HandlerUser(UserRepository repositories.UserRepository, UserDetailRepositor
 	return &handlerUser{UserRepository, UserDetailRepository, UserAddressRepository}
 }
 
-func (h *handlerUser) FindUsers(c echo.Context) error {
-	// users, _ := h.UserRepository.FindUsers()
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
+// User Detail
+func (h *handlerUser) UpdateUserDetail(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "test"})
+	request := new(userDto.UserDetailUpdateRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	_, err = h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ErrorResult{Status: http.StatusNotFound, Message: err.Error()})
+	}
+
+	userDetail := &models.UserDetail{
+		FullName:    request.FullName,
+		PhoneNumber: request.PhoneNumber,
+	}
+
+	_, err = h.UserDetailRepository.UpdateUserDetail(userId, *userDetail)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "User Detail updated successfully!"})
 }
 
-func (h *handlerUser) GetUser(c echo.Context) error {
-	// id, _ := strconv.Atoi(c.Param("id"))
-	// // userLogin := c.Get("userLogin")
-	// // userId := userLogin.(jwt.MapClaims)["id"].(float64)
+// User Address
+func (h *handlerUser) NewUserAddress(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	// user, err := h.UserRepository.GetUser(id)
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
+	request := new(userDto.NewUserAddressRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "user"})
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	userAddress := &models.UserAddress{
+		ID:             uuid.New().String()[:8],
+		UserID:         userId,
+		ProvinceID:     request.ProvinceID,
+		RegencyID:      request.RegencyID,
+		DistrictID:     request.DistrictID,
+		AddressLine:    request.AddressLine,
+		DefaultAddress: request.DefaultAddress,
+	}
+
+	_, err = h.UserAddressRepository.CreateUserAddress(*userAddress)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	userAddressData, err := h.UserAddressRepository.GetUserAddressByID(userAddress.ID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ErrorResult{Status: http.StatusNotFound, Message: err.Error()})
+	}
+
+	if request.DefaultAddress {
+		// OK Update user's other default address to false
+		err := h.UserAddressRepository.UpdateUserDefaultAddress(userAddressData.ID, userId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: userAddressData})
 }
 
-func (h *handlerUser) UpdateUser(c echo.Context) error {
-	// // userLogin := c.Get("userLogin")
-	// // userId := userLogin.(jwt.MapClaims)["id"].(float64)
-	// id, _ := strconv.Atoi(c.Param("id"))
+func (h *handlerUser) GetUserAddressByID(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	// imageFile := c.Get("image").(string)
+	userAddressId := c.Param("id")
 
-	// request := usersdto.UserUpdateRequest{
-	// 	Avatar: imageFile,
-	// }
+	// OK Validate if userId is owner of addressId
+	userAddressData, err := h.UserAddressRepository.GetUserAddressByID(userAddressId)
+	if userAddressData.UserID != userId {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "User Address ID not found!"})
+	} else if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ErrorResult{Status: http.StatusNotFound, Message: err.Error()})
+	}
 
-	// validation := validator.New()
-	// err := validation.Struct(request)
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
-
-	// var ctx = context.Background()
-	// var CLOUD_NAME = os.Getenv("CLOUD_NAME")
-	// var API_KEY = os.Getenv("API_KEY")
-	// var API_SECRET = os.Getenv("API_SECRET")
-
-	// // Add your Cloudinary credentials ...
-	// cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
-
-	// // Upload file to Cloudinary ...
-	// resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "skripsi"})
-
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
-
-	// user, err := h.UserRepository.GetUser(id)
-	// // user, err := h.UserRepository.GetUser(id)
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
-
-	// if request.Avatar != "" {
-	// 	user.Avatar = resp.SecureURL
-	// }
-
-	// data, err := h.UserRepository.UpdateUser(user)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
-	// }
-
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "data"})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: userAddressData})
 }
 
-func (h *handlerUser) UpdateInfoUser(c echo.Context) error {
-	// // userLogin := c.Get("userLogin")
-	// // userId := userLogin.(jwt.MapClaims)["id"].(float64)
-	// id, _ := strconv.Atoi(c.Param("id"))
+func (h *handlerUser) GetUserAddresses(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	// request := new(usersdto.UserUpdateRequest)
-	// if err := c.Bind(request); err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
+	// OK Get addresses by userId
+	userAddressesData, err := h.UserAddressRepository.GetUserAddresses(userId)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ErrorResult{Status: http.StatusNotFound, Message: err.Error()})
+	}
 
-	// validation := validator.New()
-	// err := validation.Struct(request)
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
-
-	// user, err := h.UserRepository.GetUser(id)
-	// // user, err := h.UserRepository.GetUser(id)
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
-
-	// if request.FullName != "" {
-	// 	user.FullName = request.FullName
-	// }
-	// if request.LastName != "" {
-	// 	user.LastName = request.LastName
-	// }
-	// if request.Email != "" {
-	// 	user.Email = request.Email
-	// }
-	// if request.Institute != "" {
-	// 	user.Institute = request.Institute
-	// }
-	// if request.Phone != "" {
-	// 	user.Phone = request.Phone
-	// }
-	// if request.Address != "" {
-	// 	user.Address = request.Address
-	// }
-
-	// data, err := h.UserRepository.UpdateInfoUser(user)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
-	// }
-
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "data"})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: userAddressesData})
 }
 
-func (h *handlerUser) DeleteUser(c echo.Context) error {
-	// id, _ := strconv.Atoi(c.Param("id"))
+func (h *handlerUser) UpdateUserAddressByID(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	// user, err := h.UserRepository.GetUser(id)
-	// if err != nil {
-	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
-	// }
+	userAddressId := c.Param("id")
+	// OK Validate if userId is owner of addressId
+	userAddressData, err := h.UserAddressRepository.GetUserAddressByID(userAddressId)
+	if userAddressData.UserID != userId {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "User Address ID not found!"})
+	} else if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ErrorResult{Status: http.StatusNotFound, Message: err.Error()})
+	}
 
-	// data, err := h.UserRepository.DeleteUser(user)
-	// if err != nil {
-	// 	return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: http.StatusInternalServerError, Message: err.Error()})
-	// }
+	request := new(userDto.UpdateUserAddressRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
 
-	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "success delete user"})
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
 
+	userAddress := &models.UserAddress{
+		ProvinceID:     request.ProvinceID,
+		RegencyID:      request.RegencyID,
+		DistrictID:     request.DistrictID,
+		AddressLine:    request.AddressLine,
+		DefaultAddress: request.DefaultAddress,
+	}
+
+	if request.DefaultAddress {
+		// OK Update user's other default address to false
+		err := h.UserAddressRepository.UpdateUserDefaultAddress(userAddressId, userId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+	}
+
+	_, err = h.UserAddressRepository.UpdateUserAddressByID(userAddressId, *userAddress)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "User Address updated successfully!"})
 }
 
-// func IdentityResponse(u models.User, ud models.UserDetail) userDto.UserIdentityResponse {
-// 	return userDto.UserIdentityResponse{
-// 		ID:       u.ID,
-// 		FullName: ud.FullName,
-// 		Email:    u.Email,
-// 		Phone:    ud.PhoneNumber,
-// 	}
-// }
+func (h *handlerUser) DeleteUserAddressByID(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-// func LoginResponse(u models.User, ud models.UserDetail) userDto.UserLoginResponse {
-// 	return userDto.UserLoginResponse{
-// 		ID:       ud.ID,
-// 		FullName: ud.FullName,
-// 		Email:    u.Email,
-// 		Phone:    ud.PhoneNumber,
-// 	}
-// }
+	userAddressId := c.Param("id")
+	// OK Validate if userId is owner of addressId
+	userAddressData, err := h.UserAddressRepository.GetUserAddressByID(userAddressId)
+	if userAddressData.UserID != userId {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "User Address ID not found!"})
+	} else if err != nil {
+		return c.JSON(http.StatusNotFound, dto.ErrorResult{Status: http.StatusNotFound, Message: err.Error()})
+	}
 
-// func DefaultUserReponse(u models.User, ud models.UserDetail) userDto.UserDefaultResponse {
-// 	return userDto.UserDefaultResponse{
-// 		ID:       u.ID,
-// 		FullName: ud.FullName,
-// 		Email:    u.Email,
-// 		Phone:    ud.PhoneNumber,
-// 	}
-// }
+	_, err = h.UserAddressRepository.DeleteUserAddressByID(userAddressId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "User Address deleted successfully!"})
+}
+
+// Provinces
+func (h *handlerUser) GetProvinces(c echo.Context) error {
+	provincesData, err := h.UserAddressRepository.GetProvinces()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: provincesData})
+}
+
+func (h *handlerUser) GetProvinceByID(c echo.Context) error {
+	id := c.Param("id")
+	provinceData, err := h.UserAddressRepository.GetProvinceByID(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: provinceData})
+}
+
+// Regencies
+func (h *handlerUser) GetRegencies(c echo.Context) error {
+	regenciesData, err := h.UserAddressRepository.GetRegencies()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: regenciesData})
+}
+
+func (h *handlerUser) GetRegenciesByProvinceID(c echo.Context) error {
+	province_id := c.Param("province_id")
+	regenciesData, err := h.UserAddressRepository.GetRegenciesByProvinceID(province_id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: regenciesData})
+}
+
+func (h *handlerUser) GetRegencyByID(c echo.Context) error {
+	id := c.Param("id")
+	regencyData, err := h.UserAddressRepository.GetRegencyByID(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: regencyData})
+}
+
+// Districts
+func (h *handlerUser) GetDistricts(c echo.Context) error {
+	districtsData, err := h.UserAddressRepository.GetDistricts()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: districtsData})
+}
+
+func (h *handlerUser) GetDistrictsByRegencyID(c echo.Context) error {
+	regency_id := c.Param("regency_id")
+	districtsData, err := h.UserAddressRepository.GetDistrictsByRegencyID(regency_id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: districtsData})
+}
+
+func (h *handlerUser) GetDistrictByID(c echo.Context) error {
+	id := c.Param("id")
+	districtData, err := h.UserAddressRepository.GetDistrictByID(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: districtData})
+}

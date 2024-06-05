@@ -22,6 +22,6 @@ type UpdateProductImageRequest struct {
 }
 
 type UpdateProductStockRequest struct {
-	ChangeType string `json:"change_type" form:"change_type"`
-	Quantity   int64  `json:"quantity" form:"quantity"`
+	ChangeType string `json:"change_type" form:"change_type" validate:"required"`
+	Quantity   int64  `json:"quantity" form:"quantity" validate:"required"`
 }
