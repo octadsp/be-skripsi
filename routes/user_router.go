@@ -11,9 +11,10 @@ import (
 
 func UserRoutes(e *echo.Group) {
 	userRepository := repositories.RepositoryUser(pg.DB)
-	userDetailRepository := repositories.RepositoryUserDetail((pg.DB))
-	userAddressRepository := repositories.RepositoryUserAddress((pg.DB))
-	h := handlers.HandlerUser(userRepository, userDetailRepository, userAddressRepository)
+	userDetailRepository := repositories.RepositoryUserDetail(pg.DB)
+	userAddressRepository := repositories.RepositoryUserAddress(pg.DB)
+	userMessageRepository := repositories.RepositoryUserMessage(pg.DB)
+	h := handlers.HandlerUser(userRepository, userDetailRepository, userAddressRepository, userMessageRepository)
 
 	// User Detail
 	e.PUT("/user-detail", middleware.Auth(h.UpdateUserDetail))
@@ -38,4 +39,11 @@ func UserRoutes(e *echo.Group) {
 	e.GET("/districts", h.GetDistricts)
 	e.GET("/districts/:regency_id", h.GetDistrictsByRegencyID)
 	e.GET("/district/:id", h.GetDistrictByID)
+
+	// Chatbox
+	e.GET("/chats", middleware.Auth(h.GetChats))
+	e.GET("/chat/unread", middleware.Auth(h.GetUnreadChats))
+	e.GET("/chat/:other_user_id", middleware.Auth(h.GetChatLogs))
+	e.GET("/chat/read/:other_user_id", middleware.Auth(h.ReadChat))
+	e.POST("/chat/:other_user_id", middleware.Auth(h.SendMessage))
 }

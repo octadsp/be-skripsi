@@ -1,22 +1,9 @@
 package userdto
 
-// type UserDefaultResponse struct {
-// 	ID       string `json:"id"`
-// 	FullName string `json:"full_name"`
-// 	Email    string `json:"email"`
-// 	Phone    string `json:"phone_number"`
-// }
-
-// type UserLoginResponse struct {
-// 	ID       string `json:"id"`
-// 	FullName string `json:"full_name"`
-// 	Email    string `json:"email"`
-// 	Phone    string `json:"phone_number"`
-// }
-
-// type UserIdentityResponse struct {
-// 	ID       string `json:"id"`
-// 	FullName string `json:"full_name"`
-// 	Email    string `json:"email"`
-// 	Phone    string `json:"phone_number"`
-// }
+// User Message
+type UserMessagesResponse struct {
+	Customer    string `json:"customer"`
+	Admin       string `json:"admin"`
+	LastMessage string `json:"last_message"`
+	TotalUnread int    `json:"total_unread"`
+}

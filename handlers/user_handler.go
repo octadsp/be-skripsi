@@ -20,10 +20,11 @@ type handlerUser struct {
 	UserRepository        repositories.UserRepository
 	UserDetailRepository  repositories.UserDetailRepository
 	UserAddressRepository repositories.UserAddressRepository
+	UserMessageRepository repositories.UserMessageRepository
 }
 
-func HandlerUser(UserRepository repositories.UserRepository, UserDetailRepository repositories.UserDetailRepository, UserAddressRepository repositories.UserAddressRepository) *handlerUser {
-	return &handlerUser{UserRepository, UserDetailRepository, UserAddressRepository}
+func HandlerUser(UserRepository repositories.UserRepository, UserDetailRepository repositories.UserDetailRepository, UserAddressRepository repositories.UserAddressRepository, UserMessageRepository repositories.UserMessageRepository) *handlerUser {
+	return &handlerUser{UserRepository, UserDetailRepository, UserAddressRepository, UserMessageRepository}
 }
 
 // User Detail
@@ -285,4 +286,84 @@ func (h *handlerUser) GetDistrictByID(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: districtData})
+}
+
+// User Message
+func (h *handlerUser) GetChats(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	userRole := userData.Role
+
+	if userRole != "ADMIN" && userRole != "CUSTOMER" {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user role"})
+	}
+
+	response, err := h.UserMessageRepository.GetChats(userRole, userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: response})
+}
+
+func (h *handlerUser) GetUnreadChats(c echo.Context) error {
+	// userLogin := c.Get("userLogin")
+	// userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	return nil
+}
+
+func (h *handlerUser) GetChatLogs(c echo.Context) error {
+	// userLogin := c.Get("userLogin")
+	// userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	// other_user_id := c.Param("other_user_id")
+
+	return nil
+}
+
+func (h *handlerUser) ReadChat(c echo.Context) error {
+	// userLogin := c.Get("userLogin")
+	// userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	// other_user_id := c.Param("other_user_id")
+
+	return nil
+}
+
+func (h *handlerUser) SendMessage(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	userRole := userData.Role
+
+	otherUserId := c.Param("other_user_id")
+
+	request := new(userDto.NewUserMessageRequest)
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	message := &models.Message{
+		ID:      uuid.New().String()[:8],
+		Message: request.Message,
+	}
+
+	h.UserMessageRepository.SendMessage(userRole, userId, otherUserId, *message)
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: "Message sent successfully"})
 }
