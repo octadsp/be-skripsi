@@ -12,6 +12,7 @@ type UserMessageRepository interface {
 	GetChats(userRole string, userId string) ([]userdto.UserInboxResponse, error)
 	GetChatLogs(userId string, otherUserId string) ([]userdto.UserChatLogResponse, error)
 	SendMessage(userRole string, userId string, otherUserId string, message models.Message) error
+	ReadChats(userRole string, userId string, otherUserId string) error
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -91,6 +92,16 @@ func (r *repository) GetChatLogs(userId string, otherUserId string) ([]userdto.U
 		Error
 
 	return message, err
+}
+
+func (r *repository) ReadChats(userRole string, userId string, otherUserId string) error {
+	switch userRole {
+	case "ADMIN":
+		return r.db.Model(&models.Message{}).Where("admin = ?", userId).Where("customer = ?", otherUserId).Where("sender != ?", userRole).Update("is_read", true).Error
+	case "CUSTOMER":
+		return r.db.Model(&models.Message{}).Where("admin = ?", otherUserId).Where("customer = ?", userId).Where("sender != ?", userRole).Update("is_read", true).Error
+	}
+	return nil
 }
 
 // func (r *repository) CreateUserDetail(userDetail models.UserDetail) (models.UserDetail, error) {

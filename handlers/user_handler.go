@@ -342,13 +342,32 @@ func (h *handlerUser) GetChatLogs(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: response})
 }
 
-func (h *handlerUser) ReadChat(c echo.Context) error {
-	// userLogin := c.Get("userLogin")
-	// userId := userLogin.(jwt.MapClaims)["id"].(string)
+func (h *handlerUser) ReadChats(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	// other_user_id := c.Param("other_user_id")
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	userRole := userData.Role
 
-	return nil
+	otherUserId := c.Param("other_user_id")
+	_, err = h.UserRepository.GetUserByID(otherUserId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user id"})
+	}
+
+	if userRole != "ADMIN" && userRole != "CUSTOMER" {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user role"})
+	}
+
+	err = h.UserMessageRepository.ReadChats(userRole, userId, otherUserId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Messages are marked as read"})
 }
 
 func (h *handlerUser) SendMessage(c echo.Context) error {

@@ -43,7 +43,7 @@ func UserRoutes(e *echo.Group) {
 	// Chatbox
 	e.GET("/chats", middleware.Auth(h.GetChats)) //OK
 	e.GET("/chat/unread", middleware.Auth(h.GetUnreadChats))
-	e.GET("/chat/:other_user_id", middleware.Auth(h.GetChatLogs)) //OK
-	e.GET("/chat/read/:other_user_id", middleware.Auth(h.ReadChat))
+	e.GET("/chat/:other_user_id", middleware.Auth(h.GetChatLogs))  //OK
+	e.PUT("/chat/:other_user_id", middleware.Auth(h.ReadChats))    //OK
 	e.POST("/chat/:other_user_id", middleware.Auth(h.SendMessage)) //OK
 }
