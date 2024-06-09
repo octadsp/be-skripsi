@@ -41,9 +41,9 @@ func UserRoutes(e *echo.Group) {
 	e.GET("/district/:id", h.GetDistrictByID)
 
 	// Chatbox
-	e.GET("/chats", middleware.Auth(h.GetChats))
+	e.GET("/chats", middleware.Auth(h.GetChats)) //OK
 	e.GET("/chat/unread", middleware.Auth(h.GetUnreadChats))
-	e.GET("/chat/:other_user_id", middleware.Auth(h.GetChatLogs))
+	e.GET("/chat/:other_user_id", middleware.Auth(h.GetChatLogs)) //OK
 	e.GET("/chat/read/:other_user_id", middleware.Auth(h.ReadChat))
-	e.POST("/chat/:other_user_id", middleware.Auth(h.SendMessage))
+	e.POST("/chat/:other_user_id", middleware.Auth(h.SendMessage)) //OK
 }

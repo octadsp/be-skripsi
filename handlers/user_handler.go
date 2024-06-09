@@ -319,12 +319,27 @@ func (h *handlerUser) GetUnreadChats(c echo.Context) error {
 }
 
 func (h *handlerUser) GetChatLogs(c echo.Context) error {
-	// userLogin := c.Get("userLogin")
-	// userId := userLogin.(jwt.MapClaims)["id"].(string)
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	// other_user_id := c.Param("other_user_id")
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	userRole := userData.Role
 
-	return nil
+	otherUserId := c.Param("other_user_id")
+
+	if userRole != "ADMIN" && userRole != "CUSTOMER" {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user role"})
+	}
+
+	response, err := h.UserMessageRepository.GetChatLogs(userId, otherUserId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: response})
 }
 
 func (h *handlerUser) ReadChat(c echo.Context) error {

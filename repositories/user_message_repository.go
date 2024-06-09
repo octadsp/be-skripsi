@@ -9,7 +9,8 @@ import (
 
 // declaration of the UserMessageRepository interface, which defines methods
 type UserMessageRepository interface {
-	GetChats(userRole string, userId string) ([]userdto.UserMessagesResponse, error)
+	GetChats(userRole string, userId string) ([]userdto.UserInboxResponse, error)
+	GetChatLogs(userId string, otherUserId string) ([]userdto.UserChatLogResponse, error)
 	SendMessage(userRole string, userId string, otherUserId string, message models.Message) error
 }
 
@@ -18,7 +19,7 @@ func RepositoryUserMessage(db *gorm.DB) *repository {
 	return &repository{db} // returns a pointer to a new repository struct initialized with the provided database connection.
 }
 
-func (r *repository) GetChats(userRole string, userId string) ([]userdto.UserMessagesResponse, error) {
+func (r *repository) GetChats(userRole string, userId string) ([]userdto.UserInboxResponse, error) {
 	// OK query variables
 	table := "message"
 	condition := ""
@@ -38,7 +39,7 @@ func (r *repository) GetChats(userRole string, userId string) ([]userdto.UserMes
 		order = "admin, creation desc"
 	}
 
-	var message []userdto.UserMessagesResponse
+	var message []userdto.UserInboxResponse
 	// Define the subquery SQL string
 	subQuery := "(SELECT COUNT(*) FROM " + table + " WHERE admin = mainQuery.admin AND customer = mainQuery.customer AND sender != ? AND is_read = false) AS total_unread"
 
@@ -68,6 +69,28 @@ func (r *repository) SendMessage(userRole string, userId string, otherUserId str
 	message.Sender = userRole
 	err := r.db.Create(&message).Error // Using Create method
 	return err
+}
+
+func (r *repository) GetChatLogs(userId string, otherUserId string) ([]userdto.UserChatLogResponse, error) {
+	// OK query variables
+	table := "message"
+	order := "creation desc"
+
+	var message []userdto.UserChatLogResponse
+	err := r.db.
+		Table(table).
+		Select("*").
+		Where(
+			r.db.Where("admin = ?", userId).Where("customer = ?", otherUserId),
+		).
+		Or(
+			r.db.Where("admin = ?", otherUserId).Where("customer = ?", userId),
+		).
+		Order(order).
+		Find(&message).
+		Error
+
+	return message, err
 }
 
 // func (r *repository) CreateUserDetail(userDetail models.UserDetail) (models.UserDetail, error) {
