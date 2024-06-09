@@ -81,6 +81,7 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	userDetailData, err := h.UserDetailRepository.CreateUserDetail(*userDetail)
 	if err != nil {
 		// Handle the error
+		h.UserRepository.DeleteUserByEmail(request.Email)
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 

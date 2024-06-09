@@ -1,10 +1,12 @@
 package userdto
 
+// User Detail
 type UserDetailUpdateRequest struct {
 	FullName    string `json:"full_name" form:"full_name" validate:"required"`
 	PhoneNumber string `json:"phone_number" form:"phone_number" validate:"required"`
 }
 
+// User Address
 type NewUserAddressRequest struct {
 	ProvinceID     string `json:"province_id" form:"province_id" validate:"required"`
 	RegencyID      string `json:"regency_id" form:"regency_id" validate:"required"`
@@ -19,4 +21,9 @@ type UpdateUserAddressRequest struct {
 	DistrictID     string `json:"district_id" form:"district_id"`
 	AddressLine    string `json:"address_line" form:"address_line"`
 	DefaultAddress bool   `json:"default_address" form:"default_address"`
+}
+
+// User Message
+type NewUserMessageRequest struct {
+	Message string `json:"message" form:"message" validate:"required"`
 }
