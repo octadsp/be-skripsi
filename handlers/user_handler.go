@@ -311,11 +311,26 @@ func (h *handlerUser) GetChats(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: response})
 }
 
-func (h *handlerUser) GetUnreadChats(c echo.Context) error {
-	// userLogin := c.Get("userLogin")
-	// userId := userLogin.(jwt.MapClaims)["id"].(string)
+func (h *handlerUser) CountUnreadChats(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	return nil
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	userRole := userData.Role
+
+	if userRole != "ADMIN" && userRole != "CUSTOMER" {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user role"})
+	}
+
+	response, err := h.UserMessageRepository.CountUnreadChats(userRole, userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: response})
 }
 
 func (h *handlerUser) GetChatLogs(c echo.Context) error {
@@ -329,6 +344,10 @@ func (h *handlerUser) GetChatLogs(c echo.Context) error {
 	userRole := userData.Role
 
 	otherUserId := c.Param("other_user_id")
+	_, err = h.UserRepository.GetUserByID(otherUserId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user id"})
+	}
 
 	if userRole != "ADMIN" && userRole != "CUSTOMER" {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user role"})
@@ -380,6 +399,10 @@ func (h *handlerUser) SendMessage(c echo.Context) error {
 	userRole := userData.Role
 
 	otherUserId := c.Param("other_user_id")
+	_, err = h.UserRepository.GetUserByID(otherUserId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Unknown user id"})
+	}
 
 	request := new(userDto.NewUserMessageRequest)
 	if err := c.Bind(request); err != nil {
