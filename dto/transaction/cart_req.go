@@ -1,4 +1,4 @@
-package cartdto
+package transactiondto
 
 type NewCartItemRequest struct {
 	ProductID        string `json:"product_id" form:"product_id" validate:"required"`
