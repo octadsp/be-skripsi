@@ -14,7 +14,13 @@ func UserRoutes(e *echo.Group) {
 	userDetailRepository := repositories.RepositoryUserDetail(pg.DB)
 	userAddressRepository := repositories.RepositoryUserAddress(pg.DB)
 	userMessageRepository := repositories.RepositoryUserMessage(pg.DB)
-	h := handlers.HandlerUser(userRepository, userDetailRepository, userAddressRepository, userMessageRepository)
+
+	h := handlers.HandlerUser(
+		userRepository,
+		userDetailRepository,
+		userAddressRepository,
+		userMessageRepository,
+	)
 
 	// User Detail
 	e.PUT("/user-detail", middleware.Auth(h.UpdateUserDetail))

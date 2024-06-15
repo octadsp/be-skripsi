@@ -34,7 +34,11 @@ func RepositoryCart(db *gorm.DB) *repository {
 	return &repository{db} // returns a pointer to a new repository struct initialized with the provided database connection.
 }
 
-func (r *repository) CreateCartItem(cart models.CartItem, basePrice int64, installationFee int64) (models.CartItem, error) {
+func (r *repository) CreateCartItem(
+	cart models.CartItem,
+	basePrice int64,
+	installationFee int64,
+) (models.CartItem, error) {
 	err := r.db.
 		Create(&cart).
 		Update("sub_total", gorm.Expr("qty * ?", basePrice)).
@@ -67,7 +71,14 @@ func (r *repository) GetCartItem(productID string, userID string) (models.CartIt
 	return cartItem, err
 }
 
-func (r *repository) AddCartItemQty(productID string, userID string, qty int64, basePrice int64, installationFee int64, withInstallation bool) (models.CartItem, error) {
+func (r *repository) AddCartItemQty(
+	productID string,
+	userID string,
+	qty int64,
+	basePrice int64,
+	installationFee int64,
+	withInstallation bool,
+) (models.CartItem, error) {
 	var cartItem models.CartItem
 	if !withInstallation {
 		installationFee = 0
@@ -83,7 +94,14 @@ func (r *repository) AddCartItemQty(productID string, userID string, qty int64, 
 	return cartItem, err
 }
 
-func (r *repository) UpdateCartItem(productID string, userID string, qty int64, basePrice int64, installationFee int64, withInstallation bool) (models.CartItem, error) {
+func (r *repository) UpdateCartItem(
+	productID string,
+	userID string,
+	qty int64,
+	basePrice int64,
+	installationFee int64,
+	withInstallation bool,
+) (models.CartItem, error) {
 	var cartItem models.CartItem
 	if !withInstallation {
 		installationFee = 0

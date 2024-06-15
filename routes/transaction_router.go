@@ -16,7 +16,13 @@ func TransactionRoutes(e *echo.Group) {
 	userAddressRepository := repositories.RepositoryUserAddress(pg.DB)
 	userRepository := repositories.RepositoryUser(pg.DB)
 
-	h := handlers.HandlerTransaction(cartRepository, deliveryFareRepository, productRepository, userAddressRepository, userRepository)
+	h := handlers.HandlerTransaction(
+		cartRepository,
+		deliveryFareRepository,
+		productRepository,
+		userAddressRepository,
+		userRepository,
+	)
 
 	// Cart
 	e.POST("/cart", middleware.Auth(h.AddToCart))
