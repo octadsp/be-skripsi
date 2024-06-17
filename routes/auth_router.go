@@ -20,4 +20,5 @@ func AuthRoutes(e *echo.Group) {
 	e.GET("/check-auth", middleware.Auth(h.CheckAuth))
 	e.POST("/update-password", middleware.Auth(h.UpdatePassword))
 	e.POST("/make-admin/:id", middleware.Auth(h.MakeAdmin))
+	e.GET("/users", middleware.Auth(h.RegisteredUsers))
 }

@@ -248,3 +248,26 @@ func (h *handlerAuth) MakeAdmin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: fmt.Sprintf("%s is now an Admin", otherUserData.Email)})
 }
+
+// Get All Registered Users
+func (h *handlerAuth) RegisteredUsers(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	userRole := userData.Role
+
+	if userRole != "ADMIN" {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "You're not admin"})
+	}
+
+	usersData, err := h.UserRepository.GetUsers()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: usersData})
+}
