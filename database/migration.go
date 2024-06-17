@@ -37,7 +37,7 @@ func RunMigration() {
 	} else {
 		if pg.DB.Migrator().HasTable(&models.User{}) {
 			if err := pg.DB.Where("email = ?", "admin@superadmin.com").First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-				//Insert seed data
+				// Insert seed data
 				// OK Hashing Password
 				password, _ := bcrypt.HashPassword("1234")
 
@@ -51,6 +51,18 @@ func RunMigration() {
 				if err != nil {
 					fmt.Println(err)
 					panic("Failed to seed superadmin default account")
+				}
+
+				// OK Compose payload for User Detail
+				userDetail := &models.UserDetail{
+					ID:       uuid.New().String()[:8],
+					UserID:   user.ID,
+					FullName: "Super Admin",
+				}
+				err = pg.DB.Create(&userDetail).Error
+				if err != nil {
+					fmt.Println(err)
+					panic("Failed to seed superadmin default account details")
 				}
 			}
 		}
