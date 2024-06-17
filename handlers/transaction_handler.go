@@ -374,3 +374,45 @@ func (h *handlerTransaction) UpdateDeliveryFare(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: deliveryFareReturnData})
 }
+
+/*
+ * 	Order
+ */
+func (h *handlerTransaction) NewOrder(c echo.Context) error {
+	return nil
+}
+
+func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
+	return nil
+}
+
+func (h *handlerTransaction) GetOrders(c echo.Context) error {
+	return nil
+}
+
+func (h *handlerTransaction) GetOrder(c echo.Context) error {
+	return nil
+}
+
+/*
+ * 	Payment
+ */
+func (h *handlerTransaction) SubmitNewPayment(c echo.Context) error {
+	return nil
+}
+
+func (h *handlerTransaction) UpdatePaymentByPaymentID(c echo.Context) error {
+	return nil
+}
+
+func (h *handlerTransaction) GetAllPayment(c echo.Context) error {
+	return nil
+}
+
+func (h *handlerTransaction) GetPaymentByTransactionID(c echo.Context) error {
+	return nil
+}
+
+func (h *handlerTransaction) GetPaymentByPaymentID(c echo.Context) error {
+	return nil
+}
