@@ -23,8 +23,18 @@ type handlerUser struct {
 	UserMessageRepository repositories.UserMessageRepository
 }
 
-func HandlerUser(UserRepository repositories.UserRepository, UserDetailRepository repositories.UserDetailRepository, UserAddressRepository repositories.UserAddressRepository, UserMessageRepository repositories.UserMessageRepository) *handlerUser {
-	return &handlerUser{UserRepository, UserDetailRepository, UserAddressRepository, UserMessageRepository}
+func HandlerUser(
+	UserRepository repositories.UserRepository,
+	UserDetailRepository repositories.UserDetailRepository,
+	UserAddressRepository repositories.UserAddressRepository,
+	UserMessageRepository repositories.UserMessageRepository,
+) *handlerUser {
+	return &handlerUser{
+		UserRepository,
+		UserDetailRepository,
+		UserAddressRepository,
+		UserMessageRepository,
+	}
 }
 
 // User Detail

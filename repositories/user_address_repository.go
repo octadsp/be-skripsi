@@ -37,13 +37,23 @@ func (r *repository) CreateUserAddress(user_address models.UserAddress) (models.
 
 func (r *repository) GetUserAddressByID(user_address_id string) (models.UserAddress, error) {
 	var userAddress models.UserAddress
-	err := r.db.Preload("User").Preload("Province").Preload("Regency").Preload("District").First(&userAddress, "id = ?", user_address_id).Error
+	err := r.db.
+		Preload("User").
+		Preload("Province").
+		Preload("Regency").
+		Preload("District").
+		First(&userAddress, "id = ?", user_address_id).Error
 	return userAddress, err
 }
 
 func (r *repository) GetUserAddresses(user_id string) ([]models.UserAddress, error) {
 	var userAddresses []models.UserAddress
-	err := r.db.Preload("User").Preload("Province").Preload("Regency").Preload("District").Where("user_id = ?", user_id).Find(&userAddresses).Error
+	err := r.db.
+		Preload("User").
+		Preload("Province").
+		Preload("Regency").
+		Preload("District").
+		Where("user_id = ?", user_id).Find(&userAddresses).Error
 	return userAddresses, err
 }
 
@@ -53,7 +63,11 @@ func (r *repository) UpdateUserAddressByID(user_address_id string, user_address 
 }
 
 func (r *repository) UpdateUserDefaultAddress(user_address_id string, user_id string) error {
-	err := r.db.Model(&models.UserAddress{}).Where("user_id = ?", user_id).Where("id != ?", user_address_id).Updates(map[string]interface{}{"default_address": false}).Error
+	err := r.db.
+		Model(&models.UserAddress{}).
+		Where("user_id = ?", user_id).
+		Where("id != ?", user_address_id).
+		Updates(map[string]interface{}{"default_address": false}).Error
 	return err
 }
 

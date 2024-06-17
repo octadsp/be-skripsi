@@ -98,9 +98,19 @@ func (r *repository) GetChatLogs(userId string, otherUserId string) ([]userdto.U
 func (r *repository) ReadChats(userRole string, userId string, otherUserId string) error {
 	switch userRole {
 	case "ADMIN":
-		return r.db.Model(&models.Message{}).Where("admin = ?", userId).Where("customer = ?", otherUserId).Where("sender != ?", userRole).Update("is_read", true).Error
+		return r.db.
+			Model(&models.Message{}).
+			Where("admin = ?", userId).
+			Where("customer = ?", otherUserId).
+			Where("sender != ?", userRole).
+			Update("is_read", true).Error
 	case "CUSTOMER":
-		return r.db.Model(&models.Message{}).Where("admin = ?", otherUserId).Where("customer = ?", userId).Where("sender != ?", userRole).Update("is_read", true).Error
+		return r.db.
+			Model(&models.Message{}).
+			Where("admin = ?", otherUserId).
+			Where("customer = ?", userId).
+			Where("sender != ?", userRole).
+			Update("is_read", true).Error
 	}
 	return nil
 }
@@ -109,10 +119,20 @@ func (r *repository) CountUnreadChats(userRole string, userId string) (int64, er
 	var count int64
 	switch userRole {
 	case "ADMIN":
-		err := r.db.Model(&models.Message{}).Where("admin = ?", userId).Where("sender != ?", "ADMIN").Where("is_read = ?", false).Count(&count).Error
+		err := r.db.
+			Model(&models.Message{}).
+			Where("admin = ?", userId).
+			Where("sender != ?", "ADMIN").
+			Where("is_read = ?", false).
+			Count(&count).Error
 		return count, err
 	case "CUSTOMER":
-		err := r.db.Model(&models.Message{}).Where("customer = ?", userId).Where("sender != ?", "CUSTOMER").Where("is_read = ?", false).Count(&count).Error
+		err := r.db.
+			Model(&models.Message{}).
+			Where("customer = ?", userId).
+			Where("sender != ?", "CUSTOMER").
+			Where("is_read = ?", false).
+			Count(&count).Error
 		return count, err
 	}
 	return 0, nil

@@ -16,7 +16,13 @@ func ProductRoutes(e *echo.Group) {
 	brandRepository := repositories.RepositoryBrand(pg.DB)
 	categoryRepository := repositories.RepositoryCategory(pg.DB)
 
-	h := handlers.HandlerProduct(productRepository, productImageRepository, productStockHistoryRepository, brandRepository, categoryRepository)
+	h := handlers.HandlerProduct(
+		productRepository,
+		productImageRepository,
+		productStockHistoryRepository,
+		brandRepository,
+		categoryRepository,
+	)
 
 	// Product
 	e.POST("/product", h.NewProduct)

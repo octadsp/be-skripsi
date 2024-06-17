@@ -45,7 +45,10 @@ func (r *repository) UpdateProduct(id string, product models.Product) (models.Pr
 }
 
 func (r *repository) UpdateProductStock(id string, operator string, quantity int64, product models.Product) (models.Product, error) {
-	err := r.db.Model(&product).Where("id = ?", id).UpdateColumn("stock", gorm.Expr(fmt.Sprintf("stock %s ?", operator), quantity)).Error
+	err := r.db.
+		Model(&product).
+		Where("id = ?", id).
+		UpdateColumn("stock", gorm.Expr(fmt.Sprintf("stock %s ?", operator), quantity)).Error
 	return product, err
 }
 
