@@ -24,8 +24,14 @@ type handlerAuth struct {
 	UserDetailRepository repository.UserDetailRepository
 }
 
-func HandlerAuth(UserRepository repository.UserRepository, UserDetailRepository repository.UserDetailRepository) *handlerAuth {
-	return &handlerAuth{UserRepository, UserDetailRepository}
+func HandlerAuth(
+	UserRepository repository.UserRepository,
+	UserDetailRepository repository.UserDetailRepository,
+) *handlerAuth {
+	return &handlerAuth{
+		UserRepository,
+		UserDetailRepository,
+	}
 }
 
 // Register Handler
