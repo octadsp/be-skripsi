@@ -247,7 +247,7 @@ func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productImageData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productImageData})
 }
 
 func (h *handlerProduct) DeleteProductImage(c echo.Context) error {
@@ -319,7 +319,7 @@ func (h *handlerProduct) UpdateProductStock(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productUpdateData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productUpdateData})
 }
 
 /*
