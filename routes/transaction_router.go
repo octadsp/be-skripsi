@@ -14,6 +14,7 @@ func TransactionRoutes(e *echo.Group) {
 	deliveryFareRepository := repositories.RepositoryDeliveryFare(pg.DB)
 	orderRepository := repositories.RepositoryOrder(pg.DB)
 	productRepository := repositories.RepositoryProduct(pg.DB)
+	productStockHistoryRepository := repositories.RepositoryProductStockHistory(pg.DB)
 	userAddressRepository := repositories.RepositoryUserAddress(pg.DB)
 	userRepository := repositories.RepositoryUser(pg.DB)
 
@@ -22,6 +23,7 @@ func TransactionRoutes(e *echo.Group) {
 		deliveryFareRepository,
 		orderRepository,
 		productRepository,
+		productStockHistoryRepository,
 		userAddressRepository,
 		userRepository,
 	)

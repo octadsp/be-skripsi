@@ -17,12 +17,13 @@ import (
 )
 
 type handlerTransaction struct {
-	CartRepository         repository.CartRepository
-	DeliveryFareRepository repository.DeliveryFareRepository
-	OrderRepository        repository.OrderRepository
-	ProductRepository      repository.ProductRepository
-	UserAddressRepository  repository.UserAddressRepository
-	UserRepository         repository.UserRepository
+	CartRepository                repository.CartRepository
+	DeliveryFareRepository        repository.DeliveryFareRepository
+	OrderRepository               repository.OrderRepository
+	ProductRepository             repository.ProductRepository
+	ProductStockHistoryRepository repository.ProductStockHistoryRepository
+	UserAddressRepository         repository.UserAddressRepository
+	UserRepository                repository.UserRepository
 }
 
 func HandlerTransaction(
@@ -30,6 +31,7 @@ func HandlerTransaction(
 	DeliveryFareRepository repository.DeliveryFareRepository,
 	OrderRepository repository.OrderRepository,
 	ProductRepository repository.ProductRepository,
+	ProductStockHistoryRepository repository.ProductStockHistoryRepository,
 	UserAddressRepository repository.UserAddressRepository,
 	UserRepository repository.UserRepository,
 ) *handlerTransaction {
@@ -38,6 +40,7 @@ func HandlerTransaction(
 		DeliveryFareRepository,
 		OrderRepository,
 		ProductRepository,
+		ProductStockHistoryRepository,
 		UserAddressRepository,
 		UserRepository,
 	}
@@ -468,7 +471,7 @@ func (h *handlerTransaction) NewOrder(c echo.Context) error {
 		SubTotal:       int64(orderItemsTotal),
 		DeliveryFee:    deliveryFee,
 		Total:          request.OrderTotal,
-		Status:         "WAITING FOR ADMIN CONFIRMATION",
+		Status:         "WAITING FOR ORDER CONFIRMATION",
 		EstimatedDeliveryAt: func() *time.Time {
 			if request.EstimatedDeliveryAt.IsZero() {
 				return nil
@@ -526,10 +529,6 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order status"})
 	}
 
-	if orderStatus == "WAITING FOR PAYMENT" {
-		// TODO Handle product stock deduction
-	}
-
 	orderId := c.Param("id")
 	orderData, err := h.OrderRepository.GetOrderByID(orderId)
 	if err != nil {
@@ -545,6 +544,48 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 	if err != nil {
 		// Handle the error
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	if orderData.Status == "WAITING FOR ORDER CONFIRMATION" && orderStatus == "WAITING FOR PAYMENT" {
+		orderItemsData, err := h.OrderRepository.GetOrderItemsByOrderID(orderId)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+
+		for i := 0; i < len(orderItemsData); i++ {
+			orderItem := orderItemsData[i]
+
+			orderItemProductID := orderItem.ProductID
+			orderItemQty := orderItem.Qty
+
+			productData, err := h.ProductRepository.GetProduct(orderItemProductID)
+			if err != nil {
+				// Handle the error
+				return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+			}
+			previousProductData := productData
+			newStock := previousProductData.Stock - orderItemQty
+
+			// Handle product stock deduction
+			// OK Insert Product Stock History
+			productStockHistory := &models.ProductStockHistory{
+				ID:            uuid.New().String()[:8],
+				ProductID:     orderItemProductID,
+				PreviousStock: previousProductData.Stock,
+				NewStock:      newStock,
+			}
+			_, err = h.ProductStockHistoryRepository.InsertProductStockHistory(*productStockHistory)
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: err.Error()})
+			}
+
+			// OK Update Product Stock
+			_, err = h.ProductRepository.UpdateProductStock(orderItemProductID, "-", orderItemQty, models.Product{})
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+			}
+		}
 	}
 
 	orderDataResponse, err := h.OrderRepository.GetOrderByID(orderId)

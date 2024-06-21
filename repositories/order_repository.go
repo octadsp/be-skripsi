@@ -13,6 +13,7 @@ type OrderRepository interface {
 	GetOrderByID(id string) (models.Order, error)
 	GetOrdersByUserID(userID string, orderStatus string) ([]models.Order, error)
 	UpdateOrderByID(id string, order models.Order) (models.Order, error)
+	GetOrderItemsByOrderID(orderID string) ([]models.OrderItem, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -72,4 +73,14 @@ func (r *repository) GetOrdersByUserID(userID string, orderStatus string) ([]mod
 func (r *repository) UpdateOrderByID(id string, order models.Order) (models.Order, error) {
 	err := r.db.Model(&order).Where("id = ?", id).Updates(&order).Error
 	return order, err
+}
+
+func (r *repository) GetOrderItemsByOrderID(orderID string) ([]models.OrderItem, error) {
+	var orderItems []models.OrderItem
+	err := r.db.
+		Preload("Product").
+		Preload("Product.Category").
+		Preload("Product.Brand").
+		Find(&orderItems, "order_id = ?", orderID).Error
+	return orderItems, err
 }
