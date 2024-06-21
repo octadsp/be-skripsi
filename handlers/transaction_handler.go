@@ -626,6 +626,8 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 				return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 			}
 		}
+	} else if orderData.Status != "ACCEPTED" && orderStatus == "ON DELIVERY" {
+		return c.JSON(http.StatusExpectationFailed, dto.SuccessResult{Status: http.StatusExpectationFailed, Data: "Order need to be confirmed before it can be delivered"})
 	}
 
 	orderDataResponse, err := h.OrderRepository.GetOrderByID(orderId)
