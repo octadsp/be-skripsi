@@ -25,4 +25,5 @@ type CheckAuthResponse struct {
 	Email       string `json:"email"`
 	PhoneNumber string `json:"phone_number"`
 	Role        string `json:"role"`
+	Token       string `json:"token"`
 }
