@@ -643,6 +643,27 @@ func (h *handlerTransaction) GetOrder(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderData})
 }
 
+func (h *handlerTransaction) AdminGetOrders(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	if userData.Role != "ADMIN" {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
+	}
+
+	ordersData, err := h.OrderRepository.GetOrdersAdmin()
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: ordersData})
+}
+
 /*
  * 	Payment
  */

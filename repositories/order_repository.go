@@ -12,6 +12,7 @@ type OrderRepository interface {
 	CreateOrderItem(orderItem models.OrderItem) (models.OrderItem, error)
 	GetOrderByID(id string) (models.Order, error)
 	GetOrdersByUserID(userID string, orderStatus string) ([]models.Order, error)
+	GetOrdersAdmin() ([]models.Order, error)
 	UpdateOrderByID(id string, order models.Order) (models.Order, error)
 	GetOrderItemsByOrderID(orderID string) ([]models.OrderItem, error)
 }
@@ -67,6 +68,24 @@ func (r *repository) GetOrdersByUserID(userID string, orderStatus string) ([]mod
 		Preload("OrderItem.Product.Brand").
 		Where("status like ?", orderStatus).
 		Find(&order, "user_id = ?", userID).Error
+	return order, err
+}
+
+func (r *repository) GetOrdersAdmin() ([]models.Order, error) {
+	var order []models.Order
+	err := r.db.
+		Preload("UserAddress").
+		Preload("UserAddress.Province").
+		Preload("UserAddress.Regency").
+		Preload("UserAddress.District").
+		Preload("DeliveryFare").
+		Preload("DeliveryFare.Province").
+		Preload("DeliveryFare.Regency").
+		Preload("OrderItem").
+		Preload("OrderItem.Product").
+		Preload("OrderItem.Product.Category").
+		Preload("OrderItem.Product.Brand").
+		Find(&order).Error
 	return order, err
 }
 
