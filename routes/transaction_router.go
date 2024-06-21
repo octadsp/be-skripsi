@@ -42,18 +42,18 @@ func TransactionRoutes(e *echo.Group) {
 	e.PUT("/delivery/fare/:id", middleware.Auth(h.UpdateDeliveryFare))
 
 	// Order
-	e.POST("/order", middleware.Auth(h.NewOrder))             // Customer create new order
-	e.GET("/orders", middleware.Auth(h.GetOrders))            // Customer get all orders
-	e.GET("/order/:id", middleware.Auth(h.GetOrder))          // Customer get specific order
-	e.PUT("/order/:id", middleware.Auth(h.UpdateOrder))       // Customer update specific order (status)
-	e.GET("/orders/admin", middleware.Auth(h.AdminGetOrders)) // Admin get all orders
+	e.POST("/order", middleware.Auth(h.NewOrder))             // OK Customer create new order
+	e.GET("/orders", middleware.Auth(h.GetOrders))            // OK Customer get all orders
+	e.GET("/order/:id", middleware.Auth(h.GetOrder))          // OK Customer get specific order
+	e.PUT("/order/:id", middleware.Auth(h.UpdateOrder))       // OK Customer update specific order status
+	e.GET("/orders/admin", middleware.Auth(h.AdminGetOrders)) // OK Admin get all orders (can use filter)
 
 	// * Payment
-	e.POST("/order/:id/payment", middleware.Auth(middleware.UploadImage(h.SubmitNewPayment)))
-	e.GET("/order/payments", middleware.Auth(h.GetAllPayment))
-	e.GET("/order/:id/payment", middleware.Auth(h.GetPaymentByTransactionID))
-	e.GET("/order/payment/:id", middleware.Auth(h.GetPaymentByPaymentID))
-	e.PUT("/order/payment/:id", middleware.Auth(h.UpdatePaymentByPaymentID))
+	e.POST("/order/:id/payment", middleware.Auth(middleware.UploadImage(h.SubmitNewPayment))) // OK Customer submit new payment
+	e.GET("/order/payments", middleware.Auth(h.GetAllPayment))                                // OK Admin get all payment
+	e.GET("/order/:id/payment", middleware.Auth(h.GetPaymentByOrderID))                       // OK Customer get payment from specific order
+	e.GET("/order/payment/:id", middleware.Auth(h.GetPaymentByPaymentID))                     // OK Admin get payment detail
+	e.PUT("/order/payment/:id", middleware.Auth(h.UpdatePaymentByPaymentID))                  // Admin update payment
 	// * Admin Operations only
 	// e.GET("/order/payment/admin", middleware.Auth(h.AdminGetAllPayment))
 }
