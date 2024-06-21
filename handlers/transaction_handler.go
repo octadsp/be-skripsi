@@ -533,6 +533,13 @@ func (h *handlerTransaction) NewOrder(c echo.Context) error {
 			// Handle the error
 			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 		}
+
+		// OK Remove cart item
+		_, err = h.CartRepository.DeleteCartItemByID(orderItem.CartID)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
 	}
 
 	orderData, err := h.OrderRepository.GetOrderByID(order.ID)
@@ -684,7 +691,12 @@ func (h *handlerTransaction) AdminGetOrders(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
 	}
 
-	ordersData, err := h.OrderRepository.GetOrdersAdmin()
+	orderStatus := c.QueryParam("status")
+	if orderStatus != "" && !contains.Contains(contains.OrderStatuses(), orderStatus) {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order status"})
+	}
+
+	ordersData, err := h.OrderRepository.GetOrdersAdmin(orderStatus)
 	if err != nil {
 		// Handle the error
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
@@ -765,18 +777,75 @@ func (h *handlerTransaction) SubmitNewPayment(c echo.Context) error {
 	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: orderPaymentDataResponse})
 }
 
-func (h *handlerTransaction) UpdatePaymentByPaymentID(c echo.Context) error {
-	return nil
-}
-
 func (h *handlerTransaction) GetAllPayment(c echo.Context) error {
-	return nil
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	if userData.Role != "ADMIN" {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
+	}
+
+	orderPaymentStatus := c.QueryParam("status")
+	if orderPaymentStatus != "" && !contains.Contains(contains.OrderPaymentStatuses(), orderPaymentStatus) {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order payment status"})
+	}
+
+	orderPaymentDatas, err := h.OrderRepository.GetAllOrderPayments(orderPaymentStatus)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderPaymentDatas})
 }
 
-func (h *handlerTransaction) GetPaymentByTransactionID(c echo.Context) error {
-	return nil
+func (h *handlerTransaction) GetPaymentByOrderID(c echo.Context) error {
+	orderId := c.Param("id")
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderPaymentData, err := h.OrderRepository.GetOrderPaymentByOrderID(orderId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderPaymentData})
 }
 
 func (h *handlerTransaction) GetPaymentByPaymentID(c echo.Context) error {
+	paymentId := c.Param("id")
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	if userData.Role != "ADMIN" {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
+	}
+
+	orderPaymentData, err := h.OrderRepository.GetOrderPaymentByID(paymentId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderPaymentData})
+}
+
+func (h *handlerTransaction) UpdatePaymentByPaymentID(c echo.Context) error {
 	return nil
 }

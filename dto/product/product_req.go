@@ -7,7 +7,7 @@ type NewProductRequest struct {
 	Price           int64  `json:"price" form:"price" validate:"required"`
 	InstallationFee int64  `json:"installation_fee" form:"installation_fee" validate:"required"`
 	OpeningStock    int64  `json:"opening_stock" form:"opening_stock"`
-	Description     string `json:"description"`
+	Description     string `json:"description" form:"description"`
 }
 
 type UpdateProductRequest struct {
@@ -16,7 +16,7 @@ type UpdateProductRequest struct {
 	CategoryID      string `json:"category_id" form:"category_id"`
 	Price           int64  `json:"price" form:"price"`
 	InstallationFee int64  `json:"installation_fee" form:"installation_fee"`
-	Description     string `json:"description"`
+	Description     string `json:"description" form:"description"`
 }
 
 type UpdateProductImageRequest struct {
