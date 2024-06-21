@@ -19,6 +19,7 @@ type OrderRepository interface {
 	GetOrderPaymentByOrderID(orderID string) (models.OrderPayment, error)
 	GetOrderPaymentByID(orderPaymentID string) (models.OrderPayment, error)
 	GetAllOrderPayments(orderPaymentStatus string) ([]models.OrderPayment, error)
+	UpdateOrderPaymentByID(orderPaymentID string, orderPayment models.OrderPayment) (models.OrderPayment, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -173,5 +174,10 @@ func (r *repository) GetOrderPaymentByID(orderPaymentID string) (models.OrderPay
 		Preload("Order.OrderItem.Product.Category").
 		Preload("Order.OrderItem.Product.Brand").
 		First(&orderPayment, "id = ?", orderPaymentID).Error
+	return orderPayment, err
+}
+
+func (r *repository) UpdateOrderPaymentByID(orderPaymentID string, orderPayment models.OrderPayment) (models.OrderPayment, error) {
+	err := r.db.Model(&orderPayment).Where("id = ?", orderPaymentID).Updates(&orderPayment).Error
 	return orderPayment, err
 }
