@@ -4,9 +4,11 @@ import (
 	dto "be-skripsi/dto/results"
 	transactionDto "be-skripsi/dto/transaction"
 	"be-skripsi/models"
+	contains "be-skripsi/pkg/contains"
 	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
@@ -15,24 +17,30 @@ import (
 )
 
 type handlerTransaction struct {
-	CartRepository         repository.CartRepository
-	DeliveryFareRepository repository.DeliveryFareRepository
-	ProductRepository      repository.ProductRepository
-	UserAddressRepository  repository.UserAddressRepository
-	UserRepository         repository.UserRepository
+	CartRepository                repository.CartRepository
+	DeliveryFareRepository        repository.DeliveryFareRepository
+	OrderRepository               repository.OrderRepository
+	ProductRepository             repository.ProductRepository
+	ProductStockHistoryRepository repository.ProductStockHistoryRepository
+	UserAddressRepository         repository.UserAddressRepository
+	UserRepository                repository.UserRepository
 }
 
 func HandlerTransaction(
 	CartRepository repository.CartRepository,
 	DeliveryFareRepository repository.DeliveryFareRepository,
+	OrderRepository repository.OrderRepository,
 	ProductRepository repository.ProductRepository,
+	ProductStockHistoryRepository repository.ProductStockHistoryRepository,
 	UserAddressRepository repository.UserAddressRepository,
 	UserRepository repository.UserRepository,
 ) *handlerTransaction {
 	return &handlerTransaction{
 		CartRepository,
 		DeliveryFareRepository,
+		OrderRepository,
 		ProductRepository,
+		ProductStockHistoryRepository,
 		UserAddressRepository,
 		UserRepository,
 	}
@@ -122,7 +130,7 @@ func (h *handlerTransaction) AddToCart(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 		}
 
-		return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: cartItemData})
+		return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: cartItemData})
 	}
 }
 
@@ -193,7 +201,7 @@ func (h *handlerTransaction) GetCart(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: cartItemsData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: cartItemsData})
 }
 
 /*
@@ -291,7 +299,7 @@ func (h *handlerTransaction) GetDeliveryFare(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: deliveryFareData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: deliveryFareData})
 }
 
 func (h *handlerTransaction) GetDeliveryFares(c echo.Context) error {
@@ -311,7 +319,7 @@ func (h *handlerTransaction) GetDeliveryFares(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: deliveryFaresData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: deliveryFaresData})
 }
 
 func (h *handlerTransaction) UpdateDeliveryFare(c echo.Context) error {
@@ -372,26 +380,263 @@ func (h *handlerTransaction) UpdateDeliveryFare(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: deliveryFareReturnData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: deliveryFareReturnData})
 }
 
 /*
  * 	Order
  */
 func (h *handlerTransaction) NewOrder(c echo.Context) error {
-	return nil
+	request := new(transactionDto.NewOrderRequest)
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	// OK Validate userAddressId
+	userAddressId := request.UserAddressID
+	_, err = h.UserAddressRepository.GetUserAddressByID(userAddressId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	// OK Validate deliveryFareId
+	deliveryFareId := request.DeliveryFareID
+	deliveryFareData, err := h.DeliveryFareRepository.GetDeliveryFareByID(deliveryFareId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	// OK Get delivery_fee
+	deliveryFee := deliveryFareData.DeliveryFee
+	request.DeliveryFee = deliveryFee
+
+	// OK Validate each product_id
+	orderItemsTotal := 0
+	cartItems := request.CartItems
+	for i := 0; i < len(cartItems); i++ {
+		// OK Recalculate sub total for each product
+		cartItem := cartItems[i]
+
+		cartID := cartItem.CartID
+		cartData, err := h.CartRepository.GetCartItemByID(cartID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+		orderProductId := cartData.ProductID
+		orderQty := cartData.Qty
+		orderWithInstallation := cartData.WithInstallation
+
+		productData, err := h.ProductRepository.GetProduct(orderProductId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+		basePrice := productData.Price
+		installationFee := productData.InstallationFee
+
+		if !orderWithInstallation {
+			installationFee = 0
+		}
+
+		cartItem.ProductID = orderProductId
+		cartItem.Qty = orderQty
+		cartItem.WithInstallation = orderWithInstallation
+
+		cartItem.SubTotal = (orderQty * basePrice) + installationFee
+		orderItemsTotal += int(cartItem.SubTotal)
+	}
+
+	// OK Calculate total (sub total products + delivery_fee)
+	request.OrderTotal = int64(orderItemsTotal) + deliveryFee
+
+	// OK Create Order
+	order := &models.Order{
+		ID:             uuid.New().String()[:8],
+		UserID:         userId,
+		UserAddressID:  userAddressId,
+		DeliveryFareID: deliveryFareId,
+		SubTotal:       int64(orderItemsTotal),
+		DeliveryFee:    deliveryFee,
+		Total:          request.OrderTotal,
+		Status:         "WAITING FOR ORDER CONFIRMATION",
+		EstimatedDeliveryAt: func() *time.Time {
+			if request.EstimatedDeliveryAt.IsZero() {
+				return nil
+			}
+			return &request.EstimatedDeliveryAt
+		}(),
+	}
+
+	_, err = h.OrderRepository.CreateOrder(*order)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	// OK Create Order Item (products = order item)
+	for i := 0; i < len(cartItems); i++ {
+		orderItem := cartItems[i]
+
+		orderItemReq := &models.OrderItem{
+			ID:               uuid.New().String()[:8],
+			OrderID:          order.ID,
+			ProductID:        orderItem.ProductID,
+			WithInstallation: orderItem.WithInstallation,
+			Qty:              orderItem.Qty,
+			SubTotal:         orderItem.SubTotal,
+		}
+
+		_, err = h.OrderRepository.CreateOrderItem(*orderItemReq)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+	}
+
+	orderData, err := h.OrderRepository.GetOrderByID(order.ID)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: orderData})
 }
 
 func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
-	return nil
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderStatus := c.QueryParam("status")
+	if orderStatus != "" && !contains.Contains(contains.OrderStatuses(), orderStatus) {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order status"})
+	}
+
+	orderId := c.Param("id")
+	orderData, err := h.OrderRepository.GetOrderByID(orderId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderDataUpdate := &models.Order{
+		Status: orderStatus,
+	}
+
+	_, err = h.OrderRepository.UpdateOrderByID(orderData.ID, *orderDataUpdate)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	if orderData.Status == "WAITING FOR ORDER CONFIRMATION" && orderStatus == "WAITING FOR PAYMENT" {
+		orderItemsData, err := h.OrderRepository.GetOrderItemsByOrderID(orderId)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+
+		for i := 0; i < len(orderItemsData); i++ {
+			orderItem := orderItemsData[i]
+
+			orderItemProductID := orderItem.ProductID
+			orderItemQty := orderItem.Qty
+
+			productData, err := h.ProductRepository.GetProduct(orderItemProductID)
+			if err != nil {
+				// Handle the error
+				return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+			}
+			previousProductData := productData
+			newStock := previousProductData.Stock - orderItemQty
+
+			// Handle product stock deduction
+			// OK Insert Product Stock History
+			productStockHistory := &models.ProductStockHistory{
+				ID:            uuid.New().String()[:8],
+				ProductID:     orderItemProductID,
+				PreviousStock: previousProductData.Stock,
+				NewStock:      newStock,
+			}
+			_, err = h.ProductStockHistoryRepository.InsertProductStockHistory(*productStockHistory)
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, dto.ErrorResultJSON{Status: http.StatusBadRequest, Message: err.Error()})
+			}
+
+			// OK Update Product Stock
+			_, err = h.ProductRepository.UpdateProductStock(orderItemProductID, "-", orderItemQty, models.Product{})
+			if err != nil {
+				return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+			}
+		}
+	}
+
+	orderDataResponse, err := h.OrderRepository.GetOrderByID(orderId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderDataResponse})
 }
 
 func (h *handlerTransaction) GetOrders(c echo.Context) error {
-	return nil
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	orderStatus := c.QueryParam("status")
+	if orderStatus != "" && !contains.Contains(contains.OrderStatuses(), orderStatus) {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order status"})
+	}
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	ordersData, err := h.OrderRepository.GetOrdersByUserID(userId, orderStatus)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: ordersData})
 }
 
 func (h *handlerTransaction) GetOrder(c echo.Context) error {
-	return nil
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderId := c.Param("id")
+	orderData, err := h.OrderRepository.GetOrderByID(orderId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderData})
 }
 
 /*

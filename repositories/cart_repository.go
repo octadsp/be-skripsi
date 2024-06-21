@@ -11,6 +11,7 @@ type CartRepository interface {
 	CreateCartItem(cart models.CartItem, basePrice int64, installationFee int64) (models.CartItem, error)
 	GetCartItems(userID string) ([]models.CartItem, error)
 	GetCartItem(productID string, userID string) (models.CartItem, error)
+	GetCartItemByID(id string) (models.CartItem, error)
 	AddCartItemQty(
 		productID string,
 		userID string,
@@ -52,6 +53,7 @@ func (r *repository) GetCartItems(userID string) ([]models.CartItem, error) {
 		Preload("Product").
 		Preload("Product.Brand").
 		Preload("Product.Category").
+		Preload("Product.ProductImage").
 		Where("user_id = ?", userID).
 		Find(&cartItems).Error
 
@@ -64,8 +66,21 @@ func (r *repository) GetCartItem(productID string, userID string) (models.CartIt
 		Preload("Product").
 		Preload("Product.Brand").
 		Preload("Product.Category").
+		Preload("Product.ProductImage").
 		Where("product_id = ?", productID).
 		Where("user_id = ?", userID).
+		First(&cartItem).Error
+
+	return cartItem, err
+}
+
+func (r *repository) GetCartItemByID(id string) (models.CartItem, error) {
+	var cartItem models.CartItem
+	err := r.db.
+		Preload("Product").
+		Preload("Product.Brand").
+		Preload("Product.Category").
+		Where("id = ?", id).
 		First(&cartItem).Error
 
 	return cartItem, err

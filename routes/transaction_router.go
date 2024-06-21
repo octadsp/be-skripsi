@@ -12,14 +12,18 @@ import (
 func TransactionRoutes(e *echo.Group) {
 	cartRepository := repositories.RepositoryCart(pg.DB)
 	deliveryFareRepository := repositories.RepositoryDeliveryFare(pg.DB)
+	orderRepository := repositories.RepositoryOrder(pg.DB)
 	productRepository := repositories.RepositoryProduct(pg.DB)
+	productStockHistoryRepository := repositories.RepositoryProductStockHistory(pg.DB)
 	userAddressRepository := repositories.RepositoryUserAddress(pg.DB)
 	userRepository := repositories.RepositoryUser(pg.DB)
 
 	h := handlers.HandlerTransaction(
 		cartRepository,
 		deliveryFareRepository,
+		orderRepository,
 		productRepository,
+		productStockHistoryRepository,
 		userAddressRepository,
 		userRepository,
 	)
@@ -36,17 +40,21 @@ func TransactionRoutes(e *echo.Group) {
 	e.GET("/delivery/fares", middleware.Auth(h.GetDeliveryFares))
 	e.PUT("/delivery/fare/:id", middleware.Auth(h.UpdateDeliveryFare))
 
-	// Order
-	e.POST("/order", middleware.Auth(h.NewOrder))
-	e.PUT("/order", middleware.Auth(h.UpdateOrder))
-	e.GET("/orders", middleware.Auth(h.GetOrders))
-	e.GET("/order/:id", middleware.Auth(h.GetOrder))
+	// TODO Order
+	e.POST("/order", middleware.Auth(h.NewOrder))       // Customer create new order
+	e.GET("/orders", middleware.Auth(h.GetOrders))      // Customer get all orders
+	e.GET("/order/:id", middleware.Auth(h.GetOrder))    // Customer get specific order
+	e.PUT("/order/:id", middleware.Auth(h.UpdateOrder)) // Customer update specific order (status)
+	// * Admin Operations only
+	// e.GET("/orders/admin", middleware.Auth(h.AdminGetOrders))      // Admin get all orders
+	// e.PUT("/order/:id/admin", middleware.Auth(h.AdminUpdateOrder)) // Admin update specific order (status)
 
-	// * Payment
-	e.POST("/order/:id/payment", middleware.Auth(h.SubmitNewPayment))
-	e.PUT("/order/payment/:id", middleware.Auth(h.UpdatePaymentByPaymentID))
-	e.GET("/order/payment", middleware.Auth(h.GetAllPayment))
-	e.GET("/order/:id/payment", middleware.Auth(h.GetPaymentByTransactionID))
-	e.GET("/order/payment/:id", middleware.Auth(h.GetPaymentByPaymentID))
-
+	// // * Payment
+	// e.POST("/order/:id/payment", middleware.Auth(h.SubmitNewPayment))
+	// e.GET("/order/payments", middleware.Auth(h.GetAllPayment))
+	// e.GET("/order/:id/payment", middleware.Auth(h.GetPaymentByTransactionID))
+	// e.GET("/order/payment/:id", middleware.Auth(h.GetPaymentByPaymentID))
+	// e.PUT("/order/payment/:id", middleware.Auth(h.UpdatePaymentByPaymentID))
+	// // * Admin Operations only
+	// e.GET("/order/payment/admin", middleware.Auth(h.AdminGetAllPayment))
 }

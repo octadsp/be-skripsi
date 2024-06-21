@@ -66,6 +66,7 @@ func (h *handlerProduct) NewProduct(c echo.Context) error {
 		Price:           request.Price,
 		InstallationFee: request.InstallationFee,
 		OpeningStock:    request.OpeningStock,
+		Description:     request.Description,
 	}
 
 	_, err = h.ProductRepository.CreateProduct(*product)
@@ -174,6 +175,7 @@ func (h *handlerProduct) UpdateProduct(c echo.Context) error {
 		CategoryID:      request.CategoryID,
 		Price:           request.Price,
 		InstallationFee: request.InstallationFee,
+		Description:     request.Description,
 	}
 
 	_, err = h.ProductRepository.UpdateProduct(id, *product)
@@ -247,7 +249,7 @@ func (h *handlerProduct) UpdateProductImage(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productImageData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productImageData})
 }
 
 func (h *handlerProduct) DeleteProductImage(c echo.Context) error {
@@ -319,7 +321,7 @@ func (h *handlerProduct) UpdateProductStock(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: productUpdateData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productUpdateData})
 }
 
 /*
