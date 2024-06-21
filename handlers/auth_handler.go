@@ -7,6 +7,7 @@ import (
 	"be-skripsi/pkg/bcrypt"
 	jwtToken "be-skripsi/pkg/jwt"
 	"fmt"
+	"strings"
 
 	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
@@ -173,8 +174,14 @@ func (h *handlerAuth) CheckAuth(c echo.Context) error {
 	userLogin := c.Get("userLogin")
 	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	userData, _ := h.UserRepository.GetUserByID(userId)
-	userDetailData, _ := h.UserDetailRepository.GetUserDetail(userData.ID)
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	userDetailData, err := h.UserDetailRepository.GetUserDetail(userData.ID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
 
 	checkAuthResponse := authDto.CheckAuthResponse{
 		ID:          userData.ID,
@@ -182,6 +189,7 @@ func (h *handlerAuth) CheckAuth(c echo.Context) error {
 		Email:       userData.Email,
 		PhoneNumber: userDetailData.PhoneNumber,
 		Role:        userData.Role,
+		Token:       strings.Split(c.Request().Header.Get("Authorization"), " ")[1],
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: checkAuthResponse})
