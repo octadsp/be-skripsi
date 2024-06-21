@@ -6,8 +6,11 @@ import (
 	"be-skripsi/pkg/pg"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
 
@@ -35,15 +38,24 @@ func RunMigration() {
 		fmt.Println(err)
 		panic("Migration Failed")
 	} else {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Error loading .env file")
+		}
+
+		var DEFAULT_SUPERADMIN_EMAIL = os.Getenv("DEFAULT_SUPERADMIN_EMAIL")
+		var DEFAULT_SUPERADMIN_PASSWORD = os.Getenv("DEFAULT_SUPERADMIN_PASSWORD")
+		var DEFAULT_SUPERADMIN_FULLNAME = os.Getenv("DEFAULT_SUPERADMIN_FULLNAME")
+
 		if pg.DB.Migrator().HasTable(&models.User{}) {
-			if err := pg.DB.Where("email = ?", "admin@superadmin.com").First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			if err := pg.DB.Where("email = ?", DEFAULT_SUPERADMIN_EMAIL).First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 				// Insert seed data
 				// OK Hashing Password
-				password, _ := bcrypt.HashPassword("1234")
+				password, _ := bcrypt.HashPassword(DEFAULT_SUPERADMIN_PASSWORD)
 
 				user := &models.User{
 					ID:       uuid.New().String()[:8],
-					Email:    "admin@superadmin.com",
+					Email:    DEFAULT_SUPERADMIN_EMAIL,
 					Password: password,
 					Role:     "ADMIN",
 				}
@@ -57,7 +69,7 @@ func RunMigration() {
 				userDetail := &models.UserDetail{
 					ID:       uuid.New().String()[:8],
 					UserID:   user.ID,
-					FullName: "Super Admin",
+					FullName: DEFAULT_SUPERADMIN_FULLNAME,
 				}
 				err = pg.DB.Create(&userDetail).Error
 				if err != nil {
