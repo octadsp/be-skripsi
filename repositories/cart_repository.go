@@ -28,6 +28,7 @@ type CartRepository interface {
 		installationFee int64,
 		withInstallation bool,
 	) (models.CartItem, error)
+	DeleteCartItemByID(id string) (models.CartItem, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -129,5 +130,12 @@ func (r *repository) UpdateCartItem(
 		Update("sub_total", gorm.Expr("qty * ?", basePrice)).
 		Update("sub_total", gorm.Expr("sub_total + ?", installationFee)).Error
 
+	return cartItem, err
+}
+
+func (r *repository) DeleteCartItemByID(id string) (models.CartItem, error) {
+	var cartItem models.CartItem
+	err := r.db.Where("id = ?", id).
+		Delete(&cartItem).Error
 	return cartItem, err
 }

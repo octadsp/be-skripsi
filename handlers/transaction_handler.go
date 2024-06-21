@@ -7,9 +7,14 @@ import (
 	contains "be-skripsi/pkg/contains"
 	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
+	"context"
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
@@ -119,7 +124,7 @@ func (h *handlerTransaction) AddToCart(c echo.Context) error {
 
 		withInstallation := cartItemData.WithInstallation
 
-		_, err = h.CartRepository.AddCartItemQty(request.ProductID, userId, 1, basePrice, installationFee, withInstallation)
+		_, err = h.CartRepository.AddCartItemQty(request.ProductID, userId, request.Qty, basePrice, installationFee, withInstallation)
 		if err != nil {
 			// Handle the error
 			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
@@ -202,6 +207,30 @@ func (h *handlerTransaction) GetCart(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: cartItemsData})
+}
+
+func (h *handlerTransaction) DeleteCart(c echo.Context) error {
+	cartId := c.Param("id")
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	_, err = h.CartRepository.GetCartItemByID(cartId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	_, err = h.CartRepository.DeleteCartItemByID(cartId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Success delete cart item"})
 }
 
 /*
@@ -519,7 +548,7 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 	userLogin := c.Get("userLogin")
 	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	_, err := h.UserRepository.GetUserByID(userId)
+	userData, err := h.UserRepository.GetUserByID(userId)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
@@ -547,6 +576,10 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 	}
 
 	if orderData.Status == "WAITING FOR ORDER CONFIRMATION" && orderStatus == "WAITING FOR PAYMENT" {
+		if userData.Role != "ADMIN" {
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
+		}
+
 		orderItemsData, err := h.OrderRepository.GetOrderItemsByOrderID(orderId)
 		if err != nil {
 			// Handle the error
@@ -639,11 +672,97 @@ func (h *handlerTransaction) GetOrder(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderData})
 }
 
+func (h *handlerTransaction) AdminGetOrders(c echo.Context) error {
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	if userData.Role != "ADMIN" {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
+	}
+
+	ordersData, err := h.OrderRepository.GetOrdersAdmin()
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: ordersData})
+}
+
 /*
  * 	Payment
  */
 func (h *handlerTransaction) SubmitNewPayment(c echo.Context) error {
-	return nil
+	orderId := c.Param("id")
+
+	imageFile := c.Get("image").(string)
+	request := transactionDto.NewOrderPaymentRequest{
+		Image: imageFile,
+	}
+
+	validation := validator.New()
+	err := validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err = h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	var ctx = context.Background()
+	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	var API_KEY = os.Getenv("API_KEY")
+	var API_SECRET = os.Getenv("API_SECRET")
+
+	// Add your Cloudinary credentials ...
+	cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+
+	// Upload file to Cloudinary ...
+	resp, err := cld.Upload.Upload(ctx, imageFile, uploader.UploadParams{Folder: "skripsi-anstem-payment"})
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	orderPayment := &models.OrderPayment{
+		ID:       uuid.New().String()[:8],
+		OrderID:  orderId,
+		ImageURL: resp.SecureURL,
+		Status:   "WAITING FOR PAYMENT CONFIRMATION",
+	}
+	_, err = h.OrderRepository.CreateOrderPayment(*orderPayment)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	now := time.Now()
+	orderDataUpdate := &models.Order{
+		Status: orderPayment.Status,
+		PaidAt: &now,
+	}
+	_, err = h.OrderRepository.UpdateOrderByID(orderPayment.OrderID, *orderDataUpdate)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderPaymentDataResponse, err := h.OrderRepository.GetOrderPaymentByOrderID(orderPayment.OrderID)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: orderPaymentDataResponse})
 }
 
 func (h *handlerTransaction) UpdatePaymentByPaymentID(c echo.Context) error {

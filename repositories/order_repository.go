@@ -12,8 +12,11 @@ type OrderRepository interface {
 	CreateOrderItem(orderItem models.OrderItem) (models.OrderItem, error)
 	GetOrderByID(id string) (models.Order, error)
 	GetOrdersByUserID(userID string, orderStatus string) ([]models.Order, error)
+	GetOrdersAdmin() ([]models.Order, error)
 	UpdateOrderByID(id string, order models.Order) (models.Order, error)
 	GetOrderItemsByOrderID(orderID string) ([]models.OrderItem, error)
+	CreateOrderPayment(orderPayment models.OrderPayment) (models.OrderPayment, error)
+	GetOrderPaymentByOrderID(orderID string) (models.OrderPayment, error)
 }
 
 // constructor function for the repository struct. It takes a *gorm.DB as an argument
@@ -70,6 +73,24 @@ func (r *repository) GetOrdersByUserID(userID string, orderStatus string) ([]mod
 	return order, err
 }
 
+func (r *repository) GetOrdersAdmin() ([]models.Order, error) {
+	var order []models.Order
+	err := r.db.
+		Preload("UserAddress").
+		Preload("UserAddress.Province").
+		Preload("UserAddress.Regency").
+		Preload("UserAddress.District").
+		Preload("DeliveryFare").
+		Preload("DeliveryFare.Province").
+		Preload("DeliveryFare.Regency").
+		Preload("OrderItem").
+		Preload("OrderItem.Product").
+		Preload("OrderItem.Product.Category").
+		Preload("OrderItem.Product.Brand").
+		Find(&order).Error
+	return order, err
+}
+
 func (r *repository) UpdateOrderByID(id string, order models.Order) (models.Order, error) {
 	err := r.db.Model(&order).Where("id = ?", id).Updates(&order).Error
 	return order, err
@@ -83,4 +104,28 @@ func (r *repository) GetOrderItemsByOrderID(orderID string) ([]models.OrderItem,
 		Preload("Product.Brand").
 		Find(&orderItems, "order_id = ?", orderID).Error
 	return orderItems, err
+}
+
+func (r *repository) CreateOrderPayment(orderPayment models.OrderPayment) (models.OrderPayment, error) {
+	err := r.db.Create(&orderPayment).Error
+	return orderPayment, err
+}
+
+func (r *repository) GetOrderPaymentByOrderID(orderID string) (models.OrderPayment, error) {
+	var orderPayment models.OrderPayment
+	err := r.db.
+		Preload("Order").
+		Preload("Order.UserAddress").
+		Preload("Order.UserAddress.Province").
+		Preload("Order.UserAddress.Regency").
+		Preload("Order.UserAddress.District").
+		Preload("Order.DeliveryFare").
+		Preload("Order.DeliveryFare.Province").
+		Preload("Order.DeliveryFare.Regency").
+		Preload("Order.OrderItem").
+		Preload("Order.OrderItem.Product").
+		Preload("Order.OrderItem.Product.Category").
+		Preload("Order.OrderItem.Product.Brand").
+		First(&orderPayment, "order_id = ?", orderID).Error
+	return orderPayment, err
 }
