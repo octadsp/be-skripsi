@@ -48,7 +48,7 @@ func TransactionRoutes(e *echo.Group) {
 	e.GET("/orders/admin", middleware.Auth(h.AdminGetOrders)) // Admin get all orders
 
 	// * Payment
-	e.POST("/order/:id/payment", middleware.Auth(h.SubmitNewPayment))
+	e.POST("/order/:id/payment", middleware.Auth(middleware.UploadImage(h.SubmitNewPayment)))
 	e.GET("/order/payments", middleware.Auth(h.GetAllPayment))
 	e.GET("/order/:id/payment", middleware.Auth(h.GetPaymentByTransactionID))
 	e.GET("/order/payment/:id", middleware.Auth(h.GetPaymentByPaymentID))
