@@ -847,5 +847,85 @@ func (h *handlerTransaction) GetPaymentByPaymentID(c echo.Context) error {
 }
 
 func (h *handlerTransaction) UpdatePaymentByPaymentID(c echo.Context) error {
-	return nil
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	userData, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	if userData.Role != "ADMIN" {
+		return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
+	}
+
+	request := new(transactionDto.UpdateOrderPaymentRequest)
+
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	orderPaymentStatus := c.QueryParam("status")
+	if orderPaymentStatus != "" && !contains.Contains(contains.OrderPaymentStatuses(), orderPaymentStatus) {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order status"})
+	}
+
+	paymentId := c.Param("id")
+	orderPaymentData, err := h.OrderRepository.GetOrderPaymentByID(paymentId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	if orderPaymentData.Status == "WAITING FOR PAYMENT CONFIRMATION" && (orderPaymentStatus == "ACCEPTED" || orderPaymentStatus == "REJECTED") {
+		orderPaymentDataUpdate := &models.OrderPayment{
+			Status: orderPaymentStatus,
+		}
+
+		_, err = h.OrderRepository.UpdateOrderPaymentByID(orderPaymentData.ID, *orderPaymentDataUpdate)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+
+		orderId := orderPaymentData.OrderID
+
+		orderData, err := h.OrderRepository.GetOrderByID(orderId)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+
+		orderDataRequest := &models.Order{
+			Status: orderPaymentStatus,
+		}
+
+		now := time.Now()
+		if orderPaymentStatus == "REJECTED" {
+			if request.RejectionReason == "" {
+				return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Rejection reason is required"})
+			}
+			orderDataRequest.RejectedAt = &now
+			orderDataRequest.RejectionReason = request.RejectionReason
+		}
+
+		if orderPaymentStatus == "ACCEPTED" {
+			orderDataRequest.AcceptedAt = &now
+		}
+
+		_, err = h.OrderRepository.UpdateOrderByID(orderData.ID, *orderDataRequest)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+
+		return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Order Payment Status has been updated"})
+	} else {
+		return c.JSON(http.StatusExpectationFailed, dto.SuccessResult{Status: http.StatusExpectationFailed, Data: "Order Payment Status already been processed before"})
+	}
 }
