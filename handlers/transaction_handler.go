@@ -7,6 +7,7 @@ import (
 	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
 	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
@@ -17,6 +18,7 @@ import (
 type handlerTransaction struct {
 	CartRepository         repository.CartRepository
 	DeliveryFareRepository repository.DeliveryFareRepository
+	OrderRepository        repository.OrderRepository
 	ProductRepository      repository.ProductRepository
 	UserAddressRepository  repository.UserAddressRepository
 	UserRepository         repository.UserRepository
@@ -25,6 +27,7 @@ type handlerTransaction struct {
 func HandlerTransaction(
 	CartRepository repository.CartRepository,
 	DeliveryFareRepository repository.DeliveryFareRepository,
+	OrderRepository repository.OrderRepository,
 	ProductRepository repository.ProductRepository,
 	UserAddressRepository repository.UserAddressRepository,
 	UserRepository repository.UserRepository,
@@ -32,6 +35,7 @@ func HandlerTransaction(
 	return &handlerTransaction{
 		CartRepository,
 		DeliveryFareRepository,
+		OrderRepository,
 		ProductRepository,
 		UserAddressRepository,
 		UserRepository,
@@ -418,14 +422,19 @@ func (h *handlerTransaction) NewOrder(c echo.Context) error {
 
 	// OK Validate each product_id
 	orderItemsTotal := 0
-	orderItems := request.OrderItems
-	for i := 0; i < len(orderItems); i++ {
+	cartItems := request.CartItems
+	for i := 0; i < len(cartItems); i++ {
 		// OK Recalculate sub total for each product
-		orderItem := orderItems[i]
+		cartItem := cartItems[i]
 
-		orderProductId := orderItem.ProductID
-		orderQty := orderItem.Qty
-		orderWithInstallation := orderItem.WithInstallation
+		cartID := cartItem.CartID
+		cartData, err := h.CartRepository.GetCartItemByID(cartID)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+		orderProductId := cartData.ProductID
+		orderQty := cartData.Qty
+		orderWithInstallation := cartData.WithInstallation
 
 		productData, err := h.ProductRepository.GetProduct(orderProductId)
 		if err != nil {
@@ -438,14 +447,18 @@ func (h *handlerTransaction) NewOrder(c echo.Context) error {
 			installationFee = 0
 		}
 
-		orderItem.SubTotal = (orderQty * basePrice) + installationFee
-		orderItemsTotal += int(orderItem.SubTotal)
+		cartItem.ProductID = orderProductId
+		cartItem.Qty = orderQty
+		cartItem.WithInstallation = orderWithInstallation
+
+		cartItem.SubTotal = (orderQty * basePrice) + installationFee
+		orderItemsTotal += int(cartItem.SubTotal)
 	}
 
 	// OK Calculate total (sub total products + delivery_fee)
 	request.OrderTotal = int64(orderItemsTotal) + deliveryFee
 
-	// TODO Create Order
+	// OK Create Order
 	order := &models.Order{
 		ID:             uuid.New().String()[:8],
 		UserID:         userId,
@@ -455,13 +468,47 @@ func (h *handlerTransaction) NewOrder(c echo.Context) error {
 		DeliveryFee:    deliveryFee,
 		Total:          request.OrderTotal,
 		Status:         "WAITING FOR ADMIN CONFIRMATION",
-		// ProvinceID:     request.ProvinceID,
-		// RegencyID:      request.RegencyID,
-		// DeliveryFee:    request.DeliveryFee,
+		EstimatedDeliveryAt: func() *time.Time {
+			if request.EstimatedDeliveryAt.IsZero() {
+				return nil
+			}
+			return &request.EstimatedDeliveryAt
+		}(),
 	}
-	// TODO Create Order Item (products = order item)
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: order})
+	_, err = h.OrderRepository.CreateOrder(*order)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	// OK Create Order Item (products = order item)
+	for i := 0; i < len(cartItems); i++ {
+		orderItem := cartItems[i]
+
+		orderItemReq := &models.OrderItem{
+			ID:               uuid.New().String()[:8],
+			OrderID:          order.ID,
+			ProductID:        orderItem.ProductID,
+			WithInstallation: orderItem.WithInstallation,
+			Qty:              orderItem.Qty,
+			SubTotal:         orderItem.SubTotal,
+		}
+
+		_, err = h.OrderRepository.CreateOrderItem(*orderItemReq)
+		if err != nil {
+			// Handle the error
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+	}
+
+	orderData, err := h.OrderRepository.GetOrderByID(order.ID)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: orderData})
 }
 
 func (h *handlerTransaction) UpdateOrder(c echo.Context) error {

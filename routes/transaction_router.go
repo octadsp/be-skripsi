@@ -12,6 +12,7 @@ import (
 func TransactionRoutes(e *echo.Group) {
 	cartRepository := repositories.RepositoryCart(pg.DB)
 	deliveryFareRepository := repositories.RepositoryDeliveryFare(pg.DB)
+	orderRepository := repositories.RepositoryOrder(pg.DB)
 	productRepository := repositories.RepositoryProduct(pg.DB)
 	userAddressRepository := repositories.RepositoryUserAddress(pg.DB)
 	userRepository := repositories.RepositoryUser(pg.DB)
@@ -19,6 +20,7 @@ func TransactionRoutes(e *echo.Group) {
 	h := handlers.HandlerTransaction(
 		cartRepository,
 		deliveryFareRepository,
+		orderRepository,
 		productRepository,
 		userAddressRepository,
 		userRepository,
