@@ -12,7 +12,7 @@ type OrderPayment struct {
 	Modified time.Time `json:"modified" gorm:"autoCreateTime"`
 }
 
-// status = WAITING FOR ADMIN CONFIRMATION / ACCEPTED / REJECTED
+// status = WAITING FOR PAYMENT CONFIRMATION / ACCEPTED / REJECTED
 
 func (OrderPayment) TableName() string {
 	return "order_payment"
