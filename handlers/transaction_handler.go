@@ -4,6 +4,7 @@ import (
 	dto "be-skripsi/dto/results"
 	transactionDto "be-skripsi/dto/transaction"
 	"be-skripsi/models"
+	contains "be-skripsi/pkg/contains"
 	errors "be-skripsi/pkg/error"
 	repository "be-skripsi/repositories"
 	"net/http"
@@ -126,7 +127,7 @@ func (h *handlerTransaction) AddToCart(c echo.Context) error {
 			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 		}
 
-		return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: cartItemData})
+		return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: cartItemData})
 	}
 }
 
@@ -197,7 +198,7 @@ func (h *handlerTransaction) GetCart(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: cartItemsData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: cartItemsData})
 }
 
 /*
@@ -295,7 +296,7 @@ func (h *handlerTransaction) GetDeliveryFare(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: deliveryFareData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: deliveryFareData})
 }
 
 func (h *handlerTransaction) GetDeliveryFares(c echo.Context) error {
@@ -315,7 +316,7 @@ func (h *handlerTransaction) GetDeliveryFares(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: deliveryFaresData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: deliveryFaresData})
 }
 
 func (h *handlerTransaction) UpdateDeliveryFare(c echo.Context) error {
@@ -376,7 +377,7 @@ func (h *handlerTransaction) UpdateDeliveryFare(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: deliveryFareReturnData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: deliveryFareReturnData})
 }
 
 /*
@@ -512,7 +513,47 @@ func (h *handlerTransaction) NewOrder(c echo.Context) error {
 }
 
 func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
-	return nil
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderStatus := c.QueryParam("status")
+	if orderStatus != "" && !contains.Contains(contains.OrderStatuses(), orderStatus) {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order status"})
+	}
+
+	if orderStatus == "WAITING FOR PAYMENT" {
+		// TODO Handle product stock deduction
+	}
+
+	orderId := c.Param("id")
+	orderData, err := h.OrderRepository.GetOrderByID(orderId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderDataUpdate := &models.Order{
+		Status: orderStatus,
+	}
+
+	_, err = h.OrderRepository.UpdateOrderByID(orderData.ID, *orderDataUpdate)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	orderDataResponse, err := h.OrderRepository.GetOrderByID(orderId)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderDataResponse})
 }
 
 func (h *handlerTransaction) GetOrders(c echo.Context) error {
@@ -520,6 +561,9 @@ func (h *handlerTransaction) GetOrders(c echo.Context) error {
 	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
 	orderStatus := c.QueryParam("status")
+	if orderStatus != "" && !contains.Contains(contains.OrderStatuses(), orderStatus) {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: "Invalid order status"})
+	}
 
 	_, err := h.UserRepository.GetUserByID(userId)
 	if err != nil {
@@ -532,27 +576,26 @@ func (h *handlerTransaction) GetOrders(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: ordersData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: ordersData})
 }
 
 func (h *handlerTransaction) GetOrder(c echo.Context) error {
 	userLogin := c.Get("userLogin")
 	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	orderId := c.Param("id")
-
 	_, err := h.UserRepository.GetUserByID(userId)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
+	orderId := c.Param("id")
 	orderData, err := h.OrderRepository.GetOrderByID(orderId)
 	if err != nil {
 		// Handle the error
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: orderData})
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: orderData})
 }
 
 /*

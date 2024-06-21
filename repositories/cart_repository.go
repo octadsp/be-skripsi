@@ -53,6 +53,7 @@ func (r *repository) GetCartItems(userID string) ([]models.CartItem, error) {
 		Preload("Product").
 		Preload("Product.Brand").
 		Preload("Product.Category").
+		Preload("Product.ProductImage").
 		Where("user_id = ?", userID).
 		Find(&cartItems).Error
 
@@ -65,6 +66,7 @@ func (r *repository) GetCartItem(productID string, userID string) (models.CartIt
 		Preload("Product").
 		Preload("Product.Brand").
 		Preload("Product.Category").
+		Preload("Product.ProductImage").
 		Where("product_id = ?", productID).
 		Where("user_id = ?", userID).
 		First(&cartItem).Error
