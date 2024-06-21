@@ -139,6 +139,26 @@ func (h *handlerProduct) GetProducts(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productsData})
 }
 
+func (h *handlerProduct) GetProductsByBrandID(c echo.Context) error {
+	brandId := c.Param("id")
+	productsData, err := h.ProductRepository.GetProductsByBrandID(brandId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productsData})
+}
+
+func (h *handlerProduct) GetProductsByCategoryID(c echo.Context) error {
+	categoryId := c.Param("id")
+	productsData, err := h.ProductRepository.GetProductsByCategoryID(categoryId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: productsData})
+}
+
 func (h *handlerProduct) GetProduct(c echo.Context) error {
 	id := c.Param("id")
 

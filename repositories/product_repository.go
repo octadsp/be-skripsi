@@ -11,6 +11,8 @@ import (
 type ProductRepository interface {
 	CreateProduct(product models.Product) (models.Product, error)
 	GetProducts() ([]models.Product, error)
+	GetProductsByBrandID(brandID string) ([]models.Product, error)
+	GetProductsByCategoryID(categoryID string) ([]models.Product, error)
 	GetProduct(id string) (models.Product, error)
 	UpdateProduct(id string, product models.Product) (models.Product, error)
 	DeleteProduct(id string) (models.Product, error)
@@ -30,6 +32,18 @@ func (r *repository) CreateProduct(product models.Product) (models.Product, erro
 func (r *repository) GetProducts() ([]models.Product, error) {
 	var products []models.Product
 	err := r.db.Preload("Brand").Preload("Category").Preload("ProductImage").Find(&products).Error
+	return products, err
+}
+
+func (r *repository) GetProductsByBrandID(brandID string) ([]models.Product, error) {
+	var products []models.Product
+	err := r.db.Preload("Brand").Preload("Category").Preload("ProductImage").Where("brand_id = ?", brandID).Find(&products).Error
+	return products, err
+}
+
+func (r *repository) GetProductsByCategoryID(categoryID string) ([]models.Product, error) {
+	var products []models.Product
+	err := r.db.Preload("Brand").Preload("Category").Preload("ProductImage").Where("category_id = ?", categoryID).Find(&products).Error
 	return products, err
 }
 
