@@ -519,7 +519,7 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 	userLogin := c.Get("userLogin")
 	userId := userLogin.(jwt.MapClaims)["id"].(string)
 
-	_, err := h.UserRepository.GetUserByID(userId)
+	userData, err := h.UserRepository.GetUserByID(userId)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
 	}
@@ -547,6 +547,10 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 	}
 
 	if orderData.Status == "WAITING FOR ORDER CONFIRMATION" && orderStatus == "WAITING FOR PAYMENT" {
+		if userData.Role != "ADMIN" {
+			return c.JSON(http.StatusUnauthorized, dto.ErrorResult{Status: http.StatusUnauthorized, Message: "Unauthorized user action"})
+		}
+
 		orderItemsData, err := h.OrderRepository.GetOrderItemsByOrderID(orderId)
 		if err != nil {
 			// Handle the error
