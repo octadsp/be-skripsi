@@ -209,6 +209,30 @@ func (h *handlerTransaction) GetCart(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: cartItemsData})
 }
 
+func (h *handlerTransaction) DeleteCart(c echo.Context) error {
+	cartId := c.Param("id")
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	_, err = h.CartRepository.GetCartItemByID(cartId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	_, err = h.CartRepository.DeleteCartItemByID(cartId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: "Success delete cart item"})
+}
+
 /*
  * 	Delivery Fare
  */

@@ -32,6 +32,7 @@ func TransactionRoutes(e *echo.Group) {
 	e.POST("/cart", middleware.Auth(h.AddToCart))
 	e.PUT("/cart", middleware.Auth(h.UpdateCart))
 	e.GET("/cart", middleware.Auth(h.GetCart))
+	e.DELETE("/cart/:id", middleware.Auth(h.DeleteCart))
 
 	// Delivery Fare
 	e.GET("/delivery/fare", middleware.Auth(h.GetDeliveryFare))
