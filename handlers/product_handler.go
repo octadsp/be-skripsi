@@ -66,6 +66,7 @@ func (h *handlerProduct) NewProduct(c echo.Context) error {
 		Price:           request.Price,
 		InstallationFee: request.InstallationFee,
 		OpeningStock:    request.OpeningStock,
+		Description:     request.Description,
 	}
 
 	_, err = h.ProductRepository.CreateProduct(*product)
@@ -174,6 +175,7 @@ func (h *handlerProduct) UpdateProduct(c echo.Context) error {
 		CategoryID:      request.CategoryID,
 		Price:           request.Price,
 		InstallationFee: request.InstallationFee,
+		Description:     request.Description,
 	}
 
 	_, err = h.ProductRepository.UpdateProduct(id, *product)
