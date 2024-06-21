@@ -37,6 +37,16 @@ func TransactionRoutes(e *echo.Group) {
 	e.PUT("/delivery/fare/:id", middleware.Auth(h.UpdateDeliveryFare))
 
 	// Order
+	e.POST("/order", middleware.Auth(h.NewOrder))
+	e.PUT("/order", middleware.Auth(h.UpdateOrder))
+	e.GET("/orders", middleware.Auth(h.GetOrders))
+	e.GET("/order/:id", middleware.Auth(h.GetOrder))
 
 	// * Payment
+	e.POST("/order/:id/payment", middleware.Auth(h.SubmitNewPayment))
+	e.PUT("/order/payment/:id", middleware.Auth(h.UpdatePaymentByPaymentID))
+	e.GET("/order/payment", middleware.Auth(h.GetAllPayment))
+	e.GET("/order/:id/payment", middleware.Auth(h.GetPaymentByTransactionID))
+	e.GET("/order/payment/:id", middleware.Auth(h.GetPaymentByPaymentID))
+
 }
