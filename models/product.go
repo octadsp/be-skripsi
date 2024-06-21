@@ -11,6 +11,7 @@ type Product struct {
 	Category        Category       `json:"category" gorm:"foreignKey:CategoryID"`
 	BrandID         string         `json:"brand_id" gorm:"type: varchar(140)"`
 	Brand           Brand          `json:"brand" gorm:"foreignKey:BrandID"`
+	Description     string         `json:"description" gorm:"type: text"`
 	Price           int64          `json:"price"`
 	InstallationFee int64          `json:"installation_fee"`
 	OpeningStock    int64          `json:"opening_stock" gorm:"default:0"`
