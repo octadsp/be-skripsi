@@ -379,7 +379,89 @@ func (h *handlerTransaction) UpdateDeliveryFare(c echo.Context) error {
  * 	Order
  */
 func (h *handlerTransaction) NewOrder(c echo.Context) error {
-	return nil
+	request := new(transactionDto.NewOrderRequest)
+
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	if err := c.Bind(request); err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusNotAcceptable, dto.ErrorResultJSON{Status: http.StatusNotAcceptable, Message: errors.ValidationErrors(err)})
+	}
+
+	// OK Validate userAddressId
+	userAddressId := request.UserAddressID
+	_, err = h.UserAddressRepository.GetUserAddressByID(userAddressId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	// OK Validate deliveryFareId
+	deliveryFareId := request.DeliveryFareID
+	deliveryFareData, err := h.DeliveryFareRepository.GetDeliveryFareByID(deliveryFareId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+	// OK Get delivery_fee
+	deliveryFee := deliveryFareData.DeliveryFee
+	request.DeliveryFee = deliveryFee
+
+	// OK Validate each product_id
+	orderItemsTotal := 0
+	orderItems := request.OrderItems
+	for i := 0; i < len(orderItems); i++ {
+		// OK Recalculate sub total for each product
+		orderItem := orderItems[i]
+
+		orderProductId := orderItem.ProductID
+		orderQty := orderItem.Qty
+		orderWithInstallation := orderItem.WithInstallation
+
+		productData, err := h.ProductRepository.GetProduct(orderProductId)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+		}
+		basePrice := productData.Price
+		installationFee := productData.InstallationFee
+
+		if !orderWithInstallation {
+			installationFee = 0
+		}
+
+		orderItem.SubTotal = (orderQty * basePrice) + installationFee
+		orderItemsTotal += int(orderItem.SubTotal)
+	}
+
+	// OK Calculate total (sub total products + delivery_fee)
+	request.OrderTotal = int64(orderItemsTotal) + deliveryFee
+
+	// TODO Create Order
+	order := &models.Order{
+		ID:             uuid.New().String()[:8],
+		UserID:         userId,
+		UserAddressID:  userAddressId,
+		DeliveryFareID: deliveryFareId,
+		SubTotal:       int64(orderItemsTotal),
+		DeliveryFee:    deliveryFee,
+		Total:          request.OrderTotal,
+		Status:         "WAITING FOR ADMIN CONFIRMATION",
+		// ProvinceID:     request.ProvinceID,
+		// RegencyID:      request.RegencyID,
+		// DeliveryFee:    request.DeliveryFee,
+	}
+	// TODO Create Order Item (products = order item)
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: order})
 }
 
 func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
