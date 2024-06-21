@@ -516,7 +516,23 @@ func (h *handlerTransaction) UpdateOrder(c echo.Context) error {
 }
 
 func (h *handlerTransaction) GetOrders(c echo.Context) error {
-	return nil
+	userLogin := c.Get("userLogin")
+	userId := userLogin.(jwt.MapClaims)["id"].(string)
+
+	orderStatus := c.QueryParam("status")
+
+	_, err := h.UserRepository.GetUserByID(userId)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	ordersData, err := h.OrderRepository.GetOrdersByUserID(userId, orderStatus)
+	if err != nil {
+		// Handle the error
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: http.StatusBadRequest, Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusCreated, dto.SuccessResult{Status: http.StatusCreated, Data: ordersData})
 }
 
 func (h *handlerTransaction) GetOrder(c echo.Context) error {
