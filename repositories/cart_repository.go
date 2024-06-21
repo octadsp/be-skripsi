@@ -126,6 +126,7 @@ func (r *repository) UpdateCartItem(
 		Model(&cartItem).
 		Where("product_id = ?", productID).
 		Where("user_id = ?", userID).
+		Update("with_installation", withInstallation).
 		Update("qty", qty).
 		Update("sub_total", gorm.Expr("qty * ?", basePrice)).
 		Update("sub_total", gorm.Expr("sub_total + ?", installationFee)).Error
