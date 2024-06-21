@@ -135,7 +135,7 @@ func (r *repository) UpdateCartItem(
 
 func (r *repository) DeleteCartItemByID(id string) (models.CartItem, error) {
 	var cartItem models.CartItem
-	err := r.db.
-		Delete(&cartItem, id).Error
+	err := r.db.Where("id = ?", id).
+		Delete(&cartItem).Error
 	return cartItem, err
 }
