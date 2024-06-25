@@ -148,8 +148,9 @@ func (h *handlerAuth) Login(c echo.Context) error {
 	// OK Generate JWT Token
 	claims := jwt.MapClaims{}
 	claims["id"] = userData.ID
+	claims["exp"] = time.Now().Add(time.Hour * 3).Unix() // valid for 3 hours
 
-	expiresIn := time.Now().Add(time.Hour * 1).Unix()
+	expiresIn := time.Now().Add(time.Hour * 3).Unix()
 
 	token, errGenerateToken := jwtToken.GenerateToken(&claims)
 	if errGenerateToken != nil {
