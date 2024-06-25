@@ -190,8 +190,8 @@ func (h *handlerAuth) CheckAuth(c echo.Context) error {
 		Email:       userData.Email,
 		PhoneNumber: userDetailData.PhoneNumber,
 		Role:        userData.Role,
-		// Token:       strings.Split(c.Request().Header.Get("Authorization"), " ")[1],
-		Token: userData.Token,
+		Token:       strings.Split(c.Request().Header.Get("Authorization"), " ")[1],
+		// Token: userData.Token,
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccessResult{Status: http.StatusOK, Data: checkAuthResponse})
